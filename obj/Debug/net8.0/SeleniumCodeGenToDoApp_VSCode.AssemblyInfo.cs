@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SeleniumCodeGenToDoApp_VSCode")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+51e89b47f7cfe0cd1e4da26061bd4f4a22c3ed6e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+54b4f1a33f3ed5f99931a02719fd160db0e7f64e")]
 [assembly: System.Reflection.AssemblyProductAttribute("SeleniumCodeGenToDoApp_VSCode")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SeleniumCodeGenToDoApp_VSCode")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

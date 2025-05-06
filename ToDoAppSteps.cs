@@ -11,27 +11,27 @@ public class ToDoAppSteps
 		_driver = driver ?? throw new ArgumentNullException(nameof(driver));
 }
 
-    [Given(@"I navigate to \"(.*)\"")]
-    [When(@"I navigate to \"(.*)\"")]
+    [Given(@"I navigate to ""(.*)""")]
+    [When(@"I navigate to ""(.*)""")]
     public void NavigateToUrl(string url)
     {
         _driver.Navigate().GoToUrl(url);
     }
 
-    [When(@"I click the element with (.*) \"(.*)\"")]
+    [When(@"I click the element with (.*) ""(.*)""")]
     public void ClickElement(string selectorType, string selectorValue)
     {
         _driver.FindElement(GetBy(selectorType, selectorValue)).Click();
     }
 
-    [When(@"I type \"(.*)\" into element with (.*) \"(.*)\"")]
+    [When(@"I type ""(.*)"" into element with (.*) ""(.*)""")]
     public void TypeIntoElement(string text, string selectorType, string selectorValue)
     {
         var element = _driver.FindElement(GetBy(selectorType, selectorValue));
         element.SendKeys(text);
     }
 
-    [When(@"I type \"(.*)\" and press Enter in element with (.*) \"(.*)\"")]
+    [When(@"I type ""(.*)"" and press Enter in element with (.*) ""(.*)""")]
     public void TypeAndEnter(string text, string selectorType, string selectorValue)
     {
         var element = _driver.FindElement(GetBy(selectorType, selectorValue));
@@ -39,7 +39,7 @@ public class ToDoAppSteps
         element.SendKeys(Keys.Enter);
     }
 
-    [When(@"I press Enter in element with (.*) \"(.*)\"")]
+    [When(@"I press Enter in element with (.*) ""(.*)""")]
     public void PressEnterInElement(string selectorType, string selectorValue)
     {
         _driver.FindElement(GetBy(selectorType, selectorValue)).SendKeys(Keys.Enter);

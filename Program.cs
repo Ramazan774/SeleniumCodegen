@@ -30,7 +30,6 @@ namespace WebDriverCdpRecorder
 
         static async Task Main(string[] args)
         {
-            Console.WriteLine("--- Selenium CDP Recorder (V136 - Final Fixes) ---");
             _currentFeatureName = "ToDoApp";
             ResetRecorderState();
             Console.Out.Flush();
@@ -101,7 +100,7 @@ namespace WebDriverCdpRecorder
                 Log($"\n--- Recording Started (Feature: {_currentFeatureName}) ---");
 
                 Log("Attempting initial navigation...");
-                string targetUrl = "https://todomvc.com/examples/react/dist/";
+                string targetUrl = "https://ramazanovdev.netlify.app/";
                 Log($"Navigating to: {targetUrl}");
                 driver.Navigate().GoToUrl(targetUrl);
                 Log("SUCCESS: Navigation command sent.");
@@ -351,8 +350,8 @@ namespace WebDriverCdpRecorder
 
         private static void AddNavigateSteps(StringBuilder s, HashSet<string> sig) { 
             if (sig.Add("NavigateToUrl")) { 
-                s.AppendLine("    [Given(@\"I navigate to \\\"(.*)\\\"\")]"); 
-                s.AppendLine("    [When(@\"I navigate to \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [Given(@\"I navigate to \"\"(.*)\"\"\")]"); 
+                s.AppendLine("    [When(@\"I navigate to \"\"(.*)\"\"\")]"); 
                 s.AppendLine("    public void NavigateToUrl(string url)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.Navigate().GoToUrl(url);"); 
@@ -363,7 +362,7 @@ namespace WebDriverCdpRecorder
 
         private static void AddClickSteps(StringBuilder s, HashSet<string> sig) { 
             if (sig.Add("ClickElement")) { 
-                s.AppendLine("    [When(@\"I click the element with (.*) \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [When(@\"I click the element with (.*) \"\"(.*)\"\"\")]"); 
                 s.AppendLine("    public void ClickElement(string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.FindElement(GetBy(selectorType, selectorValue)).Click();"); 
@@ -374,7 +373,7 @@ namespace WebDriverCdpRecorder
 
         private static void AddSendKeysSteps(StringBuilder s, HashSet<string> sig) { 
             if (sig.Add("TypeIntoElement")) { 
-                s.AppendLine("    [When(@\"I type \\\"(.*)\\\" into element with (.*) \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" into element with (.*) \"\"(.*)\"\"\")]"); 
                 s.AppendLine("    public void TypeIntoElement(string text, string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        var element = _driver.FindElement(GetBy(selectorType, selectorValue));"); 
@@ -386,7 +385,7 @@ namespace WebDriverCdpRecorder
 
         private static void AddEnterSteps(StringBuilder s, HashSet<string> sig) { 
             if (sig.Add("TypeAndEnter")) { 
-                s.AppendLine("    [When(@\"I type \\\"(.*)\\\" and press Enter in element with (.*) \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" and press Enter in element with (.*) \"\"(.*)\"\"\")]"); 
                 s.AppendLine("    public void TypeAndEnter(string text, string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        var element = _driver.FindElement(GetBy(selectorType, selectorValue));"); 
@@ -396,7 +395,7 @@ namespace WebDriverCdpRecorder
                 s.AppendLine(); 
             } 
             if (sig.Add("PressEnterInElement")) { 
-                s.AppendLine("    [When(@\"I press Enter in element with (.*) \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [When(@\"I press Enter in element with (.*) \"\"(.*)\"\"\")]"); 
                 s.AppendLine("    public void PressEnterInElement(string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.FindElement(GetBy(selectorType, selectorValue)).SendKeys(Keys.Enter);"); 
