@@ -31,7 +31,7 @@ namespace WebDriverCdpRecorder
         static async Task Main(string[] args)
         {
             Console.WriteLine("--- Selenium CDP Recorder (V136 - Final Fixes) ---");
-            _currentFeatureName = "DefaultFeature_" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            _currentFeatureName = "ToDoApp";
             ResetRecorderState();
             Console.Out.Flush();
 
@@ -323,9 +323,9 @@ namespace WebDriverCdpRecorder
             }
             featureFile.AppendLine("\tThen the page should be in the expected state");
 
-            stepsFile.AppendLine("using OpenQA.Selenium; using TechTalk.SpecFlow; using NUnit.Framework; using System;\n\n[Binding]\npublic class " + stepsClassName + "\n{");
+            stepsFile.AppendLine("using OpenQA.Selenium;\nusing TechTalk.SpecFlow;\nusing NUnit.Framework;\nusing System;\n\n[Binding]\npublic class " + stepsClassName + "\n{");
             stepsFile.AppendLine("    private readonly IWebDriver _driver;"); 
-            stepsFile.AppendLine($"    public {stepsClassName}(IWebDriver driver) {{ _driver = driver ?? throw new ArgumentNullException(nameof(driver)); }}\n");
+            stepsFile.AppendLine($"    public {stepsClassName}(IWebDriver driver) {{\n\t\t_driver = driver ?? throw new ArgumentNullException(nameof(driver));\n}}\n");
             var generatedSignatures = new HashSet<string>();
             if (actions.Any(a => a.ActionType == "Navigate")) { 
                 AddNavigateSteps(stepsFile, generatedSignatures); 
@@ -350,37 +350,43 @@ namespace WebDriverCdpRecorder
             Console.WriteLine($"\nGenerated: {featureFilePath}\nGenerated: {stepsFilePath}"); }
 
         private static void AddNavigateSteps(StringBuilder s, HashSet<string> sig) { 
-            if (sig.Add("NavigateToUrl")){ 
-                s.AppendLine("    [Given(@\"I navigate to \"\"(.*)\"\")]"); 
-                s.AppendLine("    [When(@\"I navigate to \"\"(.*)\"\")]"); 
+            if (sig.Add("NavigateToUrl")) { 
+                s.AppendLine("    [Given(@\"I navigate to \\\"(.*)\\\"\")]"); 
+                s.AppendLine("    [When(@\"I navigate to \\\"(.*)\\\"\")]"); 
                 s.AppendLine("    public void NavigateToUrl(string url)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.Navigate().GoToUrl(url);"); 
                 s.AppendLine("    }"); 
                 s.AppendLine(); 
-            }}
+            }
+        }
+
         private static void AddClickSteps(StringBuilder s, HashSet<string> sig) { 
-            if (sig.Add("ClickElement")){ 
-                s.AppendLine("    [When(@\"I click the element with (.*?) \"\"(.*?)\"\")]"); 
+            if (sig.Add("ClickElement")) { 
+                s.AppendLine("    [When(@\"I click the element with (.*) \\\"(.*)\\\"\")]"); 
                 s.AppendLine("    public void ClickElement(string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.FindElement(GetBy(selectorType, selectorValue)).Click();"); 
                 s.AppendLine("    }"); 
                 s.AppendLine(); 
-            }}
+            }
+        }
+
         private static void AddSendKeysSteps(StringBuilder s, HashSet<string> sig) { 
-            if (sig.Add("TypeIntoElement")){ 
-                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" into element with (.*?) \"\"(.*?)\"\")]"); 
+            if (sig.Add("TypeIntoElement")) { 
+                s.AppendLine("    [When(@\"I type \\\"(.*)\\\" into element with (.*) \\\"(.*)\\\"\")]"); 
                 s.AppendLine("    public void TypeIntoElement(string text, string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        var element = _driver.FindElement(GetBy(selectorType, selectorValue));"); 
                 s.AppendLine("        element.SendKeys(text);"); 
                 s.AppendLine("    }"); 
                 s.AppendLine(); 
-            }}
+            }
+        }
+
         private static void AddEnterSteps(StringBuilder s, HashSet<string> sig) { 
-            if (sig.Add("TypeAndEnter")){ 
-                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" and press Enter in element with (.*?) \"\"(.*?)\"\")]"); 
+            if (sig.Add("TypeAndEnter")) { 
+                s.AppendLine("    [When(@\"I type \\\"(.*)\\\" and press Enter in element with (.*) \\\"(.*)\\\"\")]"); 
                 s.AppendLine("    public void TypeAndEnter(string text, string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        var element = _driver.FindElement(GetBy(selectorType, selectorValue));"); 
@@ -389,14 +395,16 @@ namespace WebDriverCdpRecorder
                 s.AppendLine("    }"); 
                 s.AppendLine(); 
             } 
-            if (sig.Add("PressEnterInElement")){ 
-                s.AppendLine("    [When(@\"I press Enter in element with (.*?) \"\"(.*?)\"\")]"); 
+            if (sig.Add("PressEnterInElement")) { 
+                s.AppendLine("    [When(@\"I press Enter in element with (.*) \\\"(.*)\\\"\")]"); 
                 s.AppendLine("    public void PressEnterInElement(string selectorType, string selectorValue)"); 
                 s.AppendLine("    {"); 
                 s.AppendLine("        _driver.FindElement(GetBy(selectorType, selectorValue)).SendKeys(Keys.Enter);"); 
                 s.AppendLine("    }"); 
                 s.AppendLine(); 
-            }}
+            }
+        }
+
         private static void AddThenSteps(StringBuilder s, HashSet<string> sig) { 
             if (sig.Add("ThenExpectedState")){ 
                 s.AppendLine("    [Then(@\"the page should be in the expected state\")]"); 
@@ -412,7 +420,15 @@ namespace WebDriverCdpRecorder
             s.AppendLine("        selectorValue = selectorValue ?? string.Empty; selectorType = selectorType ?? string.Empty;"); 
             s.AppendLine("        switch (selectorType.ToLowerInvariant().Trim())"); 
             s.AppendLine("        {"); 
-            s.AppendLine("            case \"id\": return By.Id(selectorValue); case \"name\": return By.Name(selectorValue); case \"classname\": return By.ClassName(selectorValue); case \"cssselector\": return By.CssSelector(selectorValue); case \"xpath\": return By.XPath(selectorValue); case \"linktext\": return By.LinkText(selectorValue); case \"partiallinktext\": return By.PartialLinkText(selectorValue); case \"tagname\": return By.TagName(selectorValue);"); s.AppendLine("            default: throw new ArgumentException($\"Unsupported selector type provided: '{selectorType}'. Value was '{selectorValue}'.\");"); 
+            s.AppendLine("            case \"id\": return By.Id(selectorValue);");
+            s.AppendLine("            case \"name\": return By.Name(selectorValue);");
+            s.AppendLine("            case \"classname\": return By.ClassName(selectorValue);");
+            s.AppendLine("            case \"cssselector\": return By.CssSelector(selectorValue);");
+            s.AppendLine("            case \"xpath\": return By.XPath(selectorValue);");
+            s.AppendLine("            case \"linktext\": return By.LinkText(selectorValue);");
+            s.AppendLine("            case \"partiallinktext\": return By.PartialLinkText(selectorValue);");
+            s.AppendLine("            case \"tagname\": return By.TagName(selectorValue);");
+            s.AppendLine("            default: throw new ArgumentException($\"Unsupported selector type provided: '{selectorType}'. Value was '{selectorValue}'.\");"); 
             s.AppendLine("        }"); 
             s.AppendLine("    }"); 
         }
