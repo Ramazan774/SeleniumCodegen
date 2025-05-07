@@ -34,7 +34,7 @@ namespace WebDriverCdpRecorder.Core
             }
 
             Logger.Log("Injecting JavaScript listeners...");
-            string script = GetSmartSelectorScript();
+            string script = GetInjectionScript();
 
             try
             {
@@ -55,243 +55,164 @@ namespace WebDriverCdpRecorder.Core
         }
 
         /// <summary>
-        /// Gets the smart selector JavaScript for website-specific adaptations
+        /// Gets the JavaScript code to inject
         /// </summary>
-        private string GetSmartSelectorScript()
+        private string GetInjectionScript()
         {
-            return $@" (function() {{ 
-                if (window.cdpRecorderListenersAttached) return; 
-                window.cdpRecorderListenersAttached = true; 
-                console.log('Injecting Smart Selector CDP Listeners...'); 
+            string bindingName = _sessionManager.BindingName;
+            
+            return @"(function() {
+                // Avoid reinitializing if already done
+                if (window.cdpRecorderListenersAttached) {
+                    return;
+                }
                 
-                // Keep track of input changes to record values
+                console.log('Attaching CDP recorder listeners');
+                window.cdpRecorderListenersAttached = true;
+                
+                // Track input values
                 const inputValues = new Map();
-
-                // Website-specific adaptations
-                function detectWebsite() {{
-                    const url = window.location.href;
-                    const host = window.location.hostname;
-                    
-                    // Detect TodoMVC
-                    if (url.includes('todomvc.com')) {{
-                        return 'todomvc';
-                    }}
-                    
-                    // Add more website detections here
-                    if (host.includes('ucare.org')) {{
-                        return 'ucare';
-                    }}
-                    
-                    return 'generic';
-                }}
                 
-                function getSel(el) {{ 
-                    if (!el || !el.tagName) return null; 
+                // Find the best selector for an element
+                function getBestSelector(el) {
+                    if (!el || !el.tagName) return null;
                     
-                    try {{ 
-                        const website = detectWebsite();
-                        
-                        // TodoMVC specific selectors
-                        if (website === 'todomvc') {{
-                            // For TodoMVC, prioritize these selectors
-                            if (el.className && typeof el.className === 'string') {{
-                                // Check for common TodoMVC classes
-                                if (el.className.includes('new-todo')) return {{ type: 'ClassName', value: 'new-todo' }};
-                                if (el.className.includes('toggle')) return {{ type: 'ClassName', value: 'toggle' }};
-                                if (el.className.includes('destroy')) return {{ type: 'ClassName', value: 'destroy' }};
-                                
-                                // For other classes, just use the first class
-                                const classNames = el.className.split(' ').filter(c => c);
-                                if (classNames.length > 0) return {{ type: 'ClassName', value: classNames[0] }};
-                            }}
-                        }}
-                        
-                        // UCare specific selectors
-                        if (website === 'ucare') {{
-                            // Check for atomic components
-                            if (el.tagName.toLowerCase().startsWith('atomic-')) {{
-                                // Get ARIA attributes first for accessibility
-                                const ariaLabel = el.getAttribute('aria-label');
-                                if (ariaLabel) return {{ type: 'aria-label', value: ariaLabel }};
-                                
-                                // Try placeholder for input fields
-                                const placeholder = el.getAttribute('placeholder');
-                                if (placeholder) return {{ type: 'placeholder', value: placeholder }};
-                                
-                                // Fallback to tag name and class
-                                return {{ type: 'TagName', value: el.tagName.toLowerCase() }};
-                            }}
-                        }}
-                        
-                        // Generic selectors (for all websites)
-                        
-                        // Data test attributes are most reliable for testing
-                        const testId = el.getAttribute('data-test-id') || el.getAttribute('data-testid') || el.getAttribute('data-test');
-                        if (testId) return {{ type: 'data-test-id', value: testId }};
+                    try {
+                        // Try data-test attributes first (best practice for testing)
+                        const testId = el.getAttribute('data-test-id') || 
+                                     el.getAttribute('data-testid') || 
+                                     el.getAttribute('data-test');
+                        if (testId) {
+                            return { type: 'data-test-id', value: testId };
+                        }
                         
                         // ID is unique and reliable
-                        if (el.id) return {{ type: 'Id', value: el.id }};
+                        if (el.id) {
+                            return { type: 'Id', value: el.id };
+                        }
                         
-                        // Accessibility attributes
+                        // ARIA attributes for accessibility
                         const ariaLabel = el.getAttribute('aria-label');
-                        if (ariaLabel && ariaLabel.length < 50) return {{ type: 'aria-label', value: ariaLabel }};
+                        if (ariaLabel && ariaLabel.length < 50) {
+                            return { type: 'aria-label', value: ariaLabel };
+                        }
                         
-                        // Input placeholders
+                        // Placeholder for inputs
                         const placeholder = el.getAttribute('placeholder');
-                        if (placeholder && placeholder.length < 30) return {{ type: 'placeholder', value: placeholder }};
+                        if (placeholder && placeholder.length < 30) {
+                            return { type: 'placeholder', value: placeholder };
+                        }
                         
-                        // Web component part attribute
-                        const part = el.getAttribute('part');
-                        if (part) return {{ type: 'part', value: part }};
+                        // Name attribute for form elements
+                        const name = el.getAttribute('name');
+                        if (name) {
+                            return { type: 'name', value: name };
+                        }
                         
-                        // For inputs, use type + name
-                        if (el.tagName === 'INPUT') {{
-                            const name = el.getAttribute('name');
-                            if (name) return {{ type: 'name', value: name }};
-                            
-                            const inputType = el.getAttribute('type') || 'text';
-                            if (inputType !== 'text') return {{ type: 'TagName', value: `input[type='${inputType}']` }};
-                        }}
-                        
-                        // Use className for elements with distinct classes
-                        if (el.className && typeof el.className === 'string') {{
+                        // Class name as fallback
+                        if (el.className && typeof el.className === 'string') {
                             const classes = el.className.split(' ')
-                                .filter(c => c && !c.includes(':') && !c.includes('(') && c.length < 20);
-                            if (classes.length > 0) return {{ type: 'ClassName', value: classes[0] }};
-                        }}
+                                .filter(c => c && c.length > 0 && !c.includes(':'));
+                            
+                            if (classes.length > 0) {
+                                return { type: 'ClassName', value: classes[0] };
+                            }
+                        }
                         
-                        // Fallback to tagName
-                        return {{ type: 'TagName', value: el.tagName.toLowerCase() }}; 
-                    }} 
-                    catch (e) {{ 
-                        console.error('Error getting selector', e);
-                        return {{ type: 'TagName', value: el.tagName ? el.tagName.toLowerCase() : 'unknown' }}; 
-                    }}
-                }}
-
-                // Get the actual input element, even if inside shadow DOM or custom element
-                function getInputElement(el) {{
-                    // Is this already an input element?
-                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {{
+                        // Tag name as final fallback
+                        return { type: 'TagName', value: el.tagName.toLowerCase() };
+                    }
+                    catch (e) {
+                        console.error('Error getting selector:', e);
+                        return { type: 'TagName', value: el.tagName ? el.tagName.toLowerCase() : 'unknown' };
+                    }
+                }
+                
+                // Find input element in container or shadow DOM
+                function findInputElement(el) {
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT') {
                         return el;
-                    }}
+                    }
                     
-                    // Check for input inside this element
                     const inputs = el.querySelectorAll('input, textarea, select');
-                    if (inputs && inputs.length > 0) {{
+                    if (inputs && inputs.length > 0) {
                         return inputs[0];
-                    }}
+                    }
                     
-                    // Check shadow DOM if available
-                    if (el.shadowRoot) {{
+                    if (el.shadowRoot) {
                         const shadowInputs = el.shadowRoot.querySelectorAll('input, textarea, select');
-                        if (shadowInputs && shadowInputs.length > 0) {{
+                        if (shadowInputs && shadowInputs.length > 0) {
                             return shadowInputs[0];
-                        }}
-                    }}
+                        }
+                    }
                     
-                    // Couldn't find a specific input
                     return null;
-                }}
-
-                // Monitor all input and change events to track input values
-                document.addEventListener('input', function(ev) {{
-                    const t = ev.target;
-                    if (!t || !t.tagName) return;
+                }
+                
+                // Track input values as they change
+                document.addEventListener('input', function(e) {
+                    const target = e.target;
+                    if (!target || !target.tagName) return;
                     
-                    // Store the value for the element
-                    inputValues.set(t, t.value);
+                    inputValues.set(target, target.value);
                     
-                    // Also track value for parent elements in case of custom components
-                    let parent = t.parentElement;
-                    while (parent && parent !== document.body) {{
-                        inputValues.set(parent, t.value);
+                    let parent = target.parentElement;
+                    while (parent && parent !== document.body) {
+                        inputValues.set(parent, target.value);
                         parent = parent.parentElement;
-                    }}
-                }}, true);
+                    }
+                }, true);
                 
-                function rec(ev) {{ 
-                    const t = ev.target; 
-                    if (!t || !t.tagName || t.tagName==='HTML' || t.tagName==='BODY') return; 
+                // Handle user actions
+                function handleEvent(e) {
+                    const target = e.target;
+                    if (!target || !target.tagName || target.tagName === 'HTML' || target.tagName === 'BODY') {
+                        return;
+                    }
                     
-                    // Try to find the actual input element if this is a container
-                    const inputEl = getInputElement(t);
-                    const value = inputEl ? inputEl.value : (inputValues.get(t) || t.value);
-                    
-                    // Get smart selector based on website and element
-                    const selector = getSel(t);
-                    
-                    let a = {{ 
-                        type: ev.type, 
-                        selector: selector.type,  // This is now the selector type (Id, ClassName, etc.)
-                        selectorValue: selector.value, // This is the actual selector value
-                        value: value,
-                        key: ev.key, 
-                        tagName: t.tagName, 
-                        elementType: t.type 
-                    }}; 
-                    
-                    console.log(`JS Send: type=${a.type}, tag=${a.tagName}, elType=${a.elementType}, sel=${a.selector}=${a.selectorValue}, val=${a.value}`); 
-                    
-                    try {{ 
-                        // Handle change events for all element types
-                        if (ev.type==='change') {{
-                            window.{_sessionManager.BindingName}(JSON.stringify(a));
-                        }}
-                        // Handle clicks
-                        else if (ev.type==='click') {{ 
-                            a.value = inputValues.get(t) || null; // Try to get stored value
-                            a.key = null; 
-                            window.{_sessionManager.BindingName}(JSON.stringify(a)); 
-                        }}
-                        // Handle Enter key on ANY element (not just INPUTs)
-                        else if (ev.type==='keydown' && ev.key==='Enter') {{ 
-                            a.type = 'enterkey'; 
-                            // Use stored value or get from input element if available
-                            a.value = inputValues.get(t) || (inputEl ? inputEl.value : t.value);
-                            window.{_sessionManager.BindingName}(JSON.stringify(a)); 
-                        }}
-                        // Handle form submissions
-                        else if (ev.type==='submit') {{
-                            a.type = 'submit';
-                            window.{_sessionManager.BindingName}(JSON.stringify(a));
-                        }}
-                    }} catch(e){{ 
-                        console.error('JS Bind Err:', e); 
-                    }} 
-                }} 
-
-                // Listen for all events that might indicate user actions
-                document.addEventListener('click', rec, {{ capture: true, passive: true }}); 
-                document.addEventListener('change', rec, {{ capture: true, passive: true }}); 
-                document.addEventListener('keydown', rec, {{ capture: true, passive: true }}); 
-                document.addEventListener('submit', rec, {{ capture: true, passive: true }});
+                    try {
+                        const inputEl = findInputElement(target);
+                        const value = inputEl ? inputEl.value : (inputValues.get(target) || target.value);
+                        const selector = getBestSelector(target);
+                        
+                        if (!selector) return;
+                        
+                        let action = {
+                            type: e.type,
+                            selector: selector.type,
+                            selectorValue: selector.value,
+                            value: value,
+                            key: e.key,
+                            tagName: target.tagName,
+                            elementType: target.type
+                        };
+                        
+                        // Process different event types
+                        if (e.type === 'change') {
+                            window['" + bindingName + @"'](JSON.stringify(action));
+                        }
+                        else if (e.type === 'click') {
+                            action.value = inputValues.get(target) || null;
+                            window['" + bindingName + @"'](JSON.stringify(action));
+                        }
+                        else if (e.type === 'keydown' && e.key === 'Enter') {
+                            action.type = 'enterkey';
+                            action.value = inputValues.get(target) || (inputEl ? inputEl.value : target.value);
+                            window['" + bindingName + @"'](JSON.stringify(action));
+                        }
+                    }
+                    catch (error) {
+                        console.error('Event handling error:', error);
+                    }
+                }
                 
-                // Detect form submissions by listening to all forms
-                document.querySelectorAll('form').forEach(form => {{
-                    form.addEventListener('submit', rec, {{ capture: true }});
-                }});
+                // Add event listeners
+                document.addEventListener('click', handleEvent, { capture: true, passive: true });
+                document.addEventListener('change', handleEvent, { capture: true, passive: true });
+                document.addEventListener('keydown', handleEvent, { capture: true, passive: true });
                 
-                // Watch for dynamically added forms
-                new MutationObserver(mutations => {{
-                    for (const mutation of mutations) {{
-                        if (mutation.type === 'childList') {{
-                            mutation.addedNodes.forEach(node => {{
-                                if (node.tagName === 'FORM') {{
-                                    node.addEventListener('submit', rec, {{ capture: true }});
-                                }}
-                                if (node.querySelectorAll) {{
-                                    node.querySelectorAll('form').forEach(form => {{
-                                        form.addEventListener('submit', rec, {{ capture: true }});
-                                    }});
-                                }}
-                            }});
-                        }}
-                    }}
-                }}).observe(document.body, {{ childList: true, subtree: true }});
-                
-                console.log('Smart Selector CDP Listeners Attached.'); 
-            }})();";
+                console.log('CDP Recorder initialized successfully');
+            })();";
         }
     }
 }

@@ -1,0 +1,257 @@
+[1746584600.547][INFO]: Starting ChromeDriver 136.0.7103.92 (cb81a4cc5087a8303a6c8827ee2b80b71d26e334-refs/branch-heads/7103@{#1840}) on port 62661
+[1746584600.547][INFO]: Please see https://chromedriver.chromium.org/security-considerations for suggestions on keeping ChromeDriver safe.
+[1746584600.564][INFO]: ChromeDriver was started successfully on port 62661
+[1746584600.585][INFO]: [9a3776eec2882a9eb2defd22a23fd23c] COMMAND InitSession {
+   "capabilities": {
+      "firstMatch": [ {
+         "browserName": "chrome",
+         "goog:chromeOptions": {
+            "args": [ "--start-maximized" ],
+            "binary": "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+         }
+      } ]
+   }
+}
+[1746584600.586][INFO]: Populating Preferences file: {
+   "alternate_error_pages": {
+      "enabled": false
+   },
+   "autofill": {
+      "enabled": false
+   },
+   "browser": {
+      "check_default_browser": false
+   },
+   "distribution": {
+      "import_bookmarks": false,
+      "import_history": false,
+      "import_search_engine": false,
+      "make_chrome_default_for_user": false,
+      "skip_first_run_ui": true
+   },
+   "dns_prefetching": {
+      "enabled": false
+   },
+   "profile": {
+      "content_settings": {
+         "pattern_pairs": {
+            "https://*,*": {
+               "media-stream": {
+                  "audio": "Default",
+                  "video": "Default"
+               }
+            }
+         }
+      },
+      "default_content_setting_values": {
+         "geolocation": 1
+      },
+      "default_content_settings": {
+         "geolocation": 1,
+         "mouselock": 1,
+         "notifications": 1,
+         "popups": 1,
+         "ppapi-broker": 1
+      },
+      "password_manager_enabled": false
+   },
+   "safebrowsing": {
+      "enabled": false
+   },
+   "search": {
+      "suggest_enabled": false
+   },
+   "translate": {
+      "enabled": false
+   }
+}
+[1746584600.586][INFO]: Populating Local State file: {
+   "background_mode": {
+      "enabled": false
+   },
+   "ssl": {
+      "rev_checking": {
+         "enabled": false
+      }
+   }
+}
+[1746584600.586][INFO]: ChromeDriver supports communication with Chrome via pipes. This is more reliable and more secure.
+[1746584600.586][INFO]: Use the --remote-debugging-pipe Chrome switch instead of the default --remote-debugging-port to enable this communication mode.
+[1746584600.586][INFO]: Launching chrome: /Applications/Google Chrome.app/Contents/MacOS/Google Chrome --allow-pre-commit-input --disable-background-networking --disable-client-side-phishing-detection --disable-default-apps --disable-hang-monitor --disable-popup-blocking --disable-prompt-on-repost --disable-sync --enable-automation --enable-logging --log-level=0 --no-first-run --no-service-autorun --password-store=basic --remote-debugging-port=0 --start-maximized --test-type=webdriver --use-mock-keychain --user-data-dir=/var/folders/dy/8cn77z1s0_l2dz7q_3qr3j2c0000gn/T/.org.chromium.Chromium.8ImiXS data:,
+
+DevTools listening on ws://127.0.0.1:62676/devtools/browser/3883ab8a-20f5-4059-b809-145544914e95
+[1746584600.911][DEBUG]: DevTools HTTP Request: http://localhost:62676/json/version
+[1746584601.187][DEBUG]: DevTools HTTP Response: {
+   "Browser": "Chrome/136.0.7103.49",
+   "Protocol-Version": "1.3",
+   "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+   "V8-Version": "13.6.233.8",
+   "WebKit-Version": "537.36 (@031848bc6ad02b97854f3d6154d3aefd0434756a)",
+   "webSocketDebuggerUrl": "ws://localhost:62676/devtools/browser/3883ab8a-20f5-4059-b809-145544914e95"
+}
+
+[1746584601.187][DEBUG]: DevTools HTTP Request: http://localhost:62676/json/list
+[1746584601.191][DEBUG]: DevTools HTTP Response: [ {
+   "description": "",
+   "devtoolsFrontendUrl": "https://chrome-devtools-frontend.appspot.com/serve_rev/@031848bc6ad02b97854f3d6154d3aefd0434756a/inspector.html?ws=localhost:62676/devtools/page/BA7BF2D12D195C3AB26C4FE24BE31665",
+   "id": "BA7BF2D12D195C3AB26C4FE24BE31665",
+   "title": "",
+   "type": "page",
+   "url": "data:,",
+   "webSocketDebuggerUrl": "ws://localhost:62676/devtools/page/BA7BF2D12D195C3AB26C4FE24BE31665"
+} ]
+
+[1746584601.193][INFO]: resolved localhost to ["::1","127.0.0.1"]
+[1746584601.226][DEBUG]: DevTools WebSocket Command: Target.getTargets (id=1) (session_id=) browser {
+   "filter": [ {
+      "exclude": true,
+      "type": "browser"
+   }, {
+      "exclude": true,
+      "type": "page"
+   }, {
+      "exclude": false
+   } ]
+}
+[1746584601.252][DEBUG]: DevTools WebSocket Response: Target.getTargets (id=1) (session_id=) browser {
+   "targetInfos": [ {
+      "attached": false,
+      "browserContextId": "46A353C9BCA1CB3B3178C80F2E12C4FC",
+      "canAccessOpener": false,
+      "targetId": "2FDCA72B7DA3FE7D49537AE6414A089C",
+      "title": "data:,",
+      "type": "tab",
+      "url": "data:,"
+   } ]
+}
+[1746584601.252][DEBUG]: DevTools WebSocket Command: Target.attachToTarget (id=2) (session_id=) browser {
+   "flatten": true,
+   "targetId": "2FDCA72B7DA3FE7D49537AE6414A089C"
+}
+[1746584601.253][DEBUG]: DevTools WebSocket Event: Target.attachedToTarget (session_id=) browser {
+   "sessionId": "52697C570C8DDE43CC157B62EE05446B",
+   "targetInfo": {
+      "attached": true,
+      "browserContextId": "46A353C9BCA1CB3B3178C80F2E12C4FC",
+      "canAccessOpener": false,
+      "targetId": "2FDCA72B7DA3FE7D49537AE6414A089C",
+      "title": "data:,",
+      "type": "tab",
+      "url": "data:,"
+   },
+   "waitingForDebugger": false
+}
+[1746584601.253][DEBUG]: DevTools WebSocket Response: Target.attachToTarget (id=2) (session_id=) browser {
+   "sessionId": "52697C570C8DDE43CC157B62EE05446B"
+}
+[1746584601.257][DEBUG]: DevTools WebSocket Command: Target.setAutoAttach (id=3) (session_id=52697C570C8DDE43CC157B62EE05446B) 2FDCA72B7DA3FE7D49537AE6414A089C {
+   "autoAttach": true,
+   "flatten": true,
+   "waitForDebuggerOnStart": false
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Event: Target.attachedToTarget (session_id=52697C570C8DDE43CC157B62EE05446B) 2FDCA72B7DA3FE7D49537AE6414A089C {
+   "sessionId": "7F207884963CEC5FF4E3FE8A0DE061C2",
+   "targetInfo": {
+      "attached": true,
+      "browserContextId": "46A353C9BCA1CB3B3178C80F2E12C4FC",
+      "canAccessOpener": false,
+      "targetId": "BA7BF2D12D195C3AB26C4FE24BE31665",
+      "title": "data:,",
+      "type": "page",
+      "url": "data:,"
+   },
+   "waitingForDebugger": false
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Command: Page.enable (id=4) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Command: Page.addScriptToEvaluateOnNewDocument (id=5) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "source": "(function () {window.cdc_adoQpoasnfa76pfcZLmcfl_Array = window.Array;window.cdc_adoQpoasnfa76pfcZLmcfl_Object = window.Object;window.cdc_adoQpoasnfa76pfcZLmcfl_Promise = window.Promise;window.cdc_a..."
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Command: Runtime.evaluate (id=6) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "expression": "(function () {window.cdc_adoQpoasnfa76pfcZLmcfl_Array = window.Array;window.cdc_adoQpoasnfa76pfcZLmcfl_Object = window.Object;window.cdc_adoQpoasnfa76pfcZLmcfl_Promise = window.Promise;window.cdc_a..."
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Command: Log.enable (id=7) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Command: Target.setAutoAttach (id=8) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "autoAttach": true,
+   "flatten": true,
+   "waitForDebuggerOnStart": false
+}
+[1746584601.281][DEBUG]: DevTools WebSocket Response: Target.setAutoAttach (id=3) (session_id=52697C570C8DDE43CC157B62EE05446B) 2FDCA72B7DA3FE7D49537AE6414A089C {
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Response: Page.enable (id=4) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Response: Page.addScriptToEvaluateOnNewDocument (id=5) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "identifier": "1"
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Response: Runtime.evaluate (id=6) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "result": {
+      "type": "undefined"
+   }
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Response: Log.enable (id=7) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Response: Target.setAutoAttach (id=8) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.283][DEBUG]: DevTools WebSocket Command: Runtime.enable (id=9) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.285][DEBUG]: DevTools WebSocket Event: Runtime.executionContextCreated (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+   "context": {
+      "auxData": {
+         "frameId": "BA7BF2D12D195C3AB26C4FE24BE31665",
+         "isDefault": true,
+         "type": "default"
+      },
+      "id": 1,
+      "name": "",
+      "origin": "://",
+      "uniqueId": "-870701283746304297.-1822672068236313586"
+   }
+}
+[1746584601.285][DEBUG]: DevTools WebSocket Response: Runtime.enable (id=9) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.285][DEBUG]: DevTools WebSocket Command: Runtime.enable (id=10) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.285][DEBUG]: DevTools WebSocket Response: Runtime.enable (id=10) (session_id=7F207884963CEC5FF4E3FE8A0DE061C2) BA7BF2D12D195C3AB26C4FE24BE31665 {
+}
+[1746584601.285][INFO]: [9a3776eec2882a9eb2defd22a23fd23c] RESPONSE InitSession {
+   "capabilities": {
+      "acceptInsecureCerts": false,
+      "browserName": "chrome",
+      "browserVersion": "136.0.7103.49",
+      "chrome": {
+         "chromedriverVersion": "136.0.7103.92 (cb81a4cc5087a8303a6c8827ee2b80b71d26e334-refs/branch-heads/7103@{#1840})",
+         "userDataDir": "/var/folders/dy/8cn77z1s0_l2dz7q_3qr3j2c0000gn/T/.org.chromium.Chromium.8ImiXS"
+      },
+      "fedcm:accounts": true,
+      "goog:chromeOptions": {
+         "debuggerAddress": "localhost:62676"
+      },
+      "networkConnectionEnabled": false,
+      "pageLoadStrategy": "normal",
+      "platformName": "mac",
+      "proxy": {
+      },
+      "setWindowRect": true,
+      "strictFileInteractability": false,
+      "timeouts": {
+         "implicit": 0,
+         "pageLoad": 300000,
+         "script": 30000
+      },
+      "unhandledPromptBehavior": "dismiss and notify",
+      "webauthn:extension:credBlob": true,
+      "webauthn:extension:largeBlob": true,
+      "webauthn:extension:minPinLength": true,
+      "webauthn:extension:prf": true,
+      "webauthn:virtualAuthenticators": true
+   },
+   "sessionId": "9a3776eec2882a9eb2defd22a23fd23c"
+}
+Created TensorFlow Lite XNNPACK delegate for CPU.
+Attempting to use a delegate that only supports static-sized tensors with a graph that has dynamic-sized tensors (tensor#-1 is a dynamic-sized tensor).
+[1746584649.341][INFO]: [9a3776eec2882a9eb2defd22a23fd23c] COMMAND Quit {
+}
+[1746584649.397][INFO]: [9a3776eec2882a9eb2defd22a23fd23c] RESPONSE Quit
+[1746584649.397][DEBUG]: Log type 'driver' lost 0 entries on destruction
+[1746584649.397][DEBUG]: Log type 'browser' lost 0 entries on destruction

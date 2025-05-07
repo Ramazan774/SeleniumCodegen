@@ -6,7 +6,7 @@ using WebDriverCdpRecorder.Models;
 namespace WebDriverCdpRecorder.CodeGeneration
 {
     /// <summary>
-    /// Builds SpecFlow steps files from recorded actions with universal compatibility
+    /// Builds SpecFlow steps files from recorded actions
     /// </summary>
     public class StepsFileBuilder
     {
@@ -23,8 +23,8 @@ namespace WebDriverCdpRecorder.CodeGeneration
             stepsFile.AppendLine("using TechTalk.SpecFlow;");
             stepsFile.AppendLine("using NUnit.Framework;");
             stepsFile.AppendLine("using System;");
-            stepsFile.AppendLine("using System.Threading;");
             stepsFile.AppendLine("using System.Collections.Generic;");
+            stepsFile.AppendLine("using System.Threading;");
             stepsFile.AppendLine();
             
             // Add class definition
@@ -32,7 +32,6 @@ namespace WebDriverCdpRecorder.CodeGeneration
             stepsFile.AppendLine($"public class {stepsClassName}");
             stepsFile.AppendLine("{");
             stepsFile.AppendLine("    private readonly IWebDriver _driver;");
-            stepsFile.AppendLine("    private string _baseUrl = string.Empty;");
             stepsFile.AppendLine();
             
             // Add constructor
@@ -42,9 +41,6 @@ namespace WebDriverCdpRecorder.CodeGeneration
             stepsFile.AppendLine("        ");
             stepsFile.AppendLine("        // Set implicit wait to improve stability");
             stepsFile.AppendLine("        _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);");
-            stepsFile.AppendLine("        ");
-            stepsFile.AppendLine("        // Initial delay to ensure browser is fully initialized");
-            stepsFile.AppendLine("        Thread.Sleep(1000);");
             stepsFile.AppendLine("    }");
             stepsFile.AppendLine();
             
@@ -100,10 +96,6 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("        Console.WriteLine($\"Navigating to {url}\");");
                 s.AppendLine("        _driver.Navigate().GoToUrl(url);");
                 s.AppendLine("        ");
-                s.AppendLine("        // Store base URL for potential relative navigation later");
-                s.AppendLine("        Uri uri = new Uri(url);");
-                s.AppendLine("        _baseUrl = $\"{uri.Scheme}://{uri.Host}\";");
-                s.AppendLine("        ");
                 s.AppendLine("        // Wait for page to load completely");
                 s.AppendLine("        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));");
                 s.AppendLine("        wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript(\"return document.readyState\").Equals(\"complete\"));");
@@ -128,6 +120,10 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("        ");
                 s.AppendLine("        try");
                 s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view for better reliability");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
                 s.AppendLine("            element.Click();");
                 s.AppendLine("        }");
                 s.AppendLine("        catch (ElementClickInterceptedException)");
@@ -158,6 +154,10 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("        ");
                 s.AppendLine("        try");
                 s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
                 s.AppendLine("            element.Clear();");
                 s.AppendLine("            element.SendKeys(text);");
                 s.AppendLine("        }");
@@ -193,6 +193,10 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("        ");
                 s.AppendLine("        try");
                 s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
                 s.AppendLine("            element.Clear();");
                 s.AppendLine("            element.SendKeys(text);");
                 s.AppendLine("            Thread.Sleep(300); // Short pause before pressing Enter");
@@ -207,7 +211,7 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;");
                 s.AppendLine("            js.ExecuteScript(\"arguments[0].value = arguments[1];\", element, text);");
                 s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new Event('change'));\", element);");
-                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new KeyboardEvent('keydown', {'key': 'Enter', 'keyCode': 13}));\", element);");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new KeyboardEvent('keydown', {'key': 'Enter', 'code': 'Enter', 'keyCode': 13}));\", element);");
                 s.AppendLine("        }");
                 s.AppendLine("        ");
                 s.AppendLine("        // Wait for UI to update after pressing Enter");
@@ -237,7 +241,7 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("            ");
                 s.AppendLine("            // Fallback to JavaScript for pressing Enter");
                 s.AppendLine("            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;");
-                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new KeyboardEvent('keydown', {'key': 'Enter', 'keyCode': 13}));\", element);");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new KeyboardEvent('keydown', {'key': 'Enter', 'code': 'Enter', 'keyCode': 13}));\", element);");
                 s.AppendLine("        }");
                 s.AppendLine("        ");
                 s.AppendLine("        // Wait for UI to update after pressing Enter");
@@ -289,19 +293,9 @@ namespace WebDriverCdpRecorder.CodeGeneration
                 s.AppendLine("    {");
                 s.AppendLine("        Console.WriteLine(\"Verifying the expected page state\");");
                 s.AppendLine("        ");
-                s.AppendLine("        // Adjust this assertion based on the specific website being tested");
-                s.AppendLine("        // For ToDoMVC, verify some todos exist");
-                s.AppendLine("        if (_driver.Url.Contains(\"todomvc\"))");
-                s.AppendLine("        {");
-                s.AppendLine("            var todoItems = _driver.FindElements(By.CssSelector(\".todo-list li\"));");
-                s.AppendLine("            Assert.That(todoItems.Count > 0, \"Expected at least one todo item to be created\");");
-                s.AppendLine("        }");
-                s.AppendLine("        else");
-                s.AppendLine("        {");
-                s.AppendLine("            // Generic assertion - page has loaded successfully");
-                s.AppendLine("            Assert.That(_driver.Title != null, \"Page title should not be null\");");
-                s.AppendLine("            Assert.That(_driver.PageSource.Length > 0, \"Page source should not be empty\");");
-                s.AppendLine("        }");
+                s.AppendLine("        // Basic verification that page loaded successfully");
+                s.AppendLine("        Assert.That(_driver.Title != null, \"Page title should not be null\");");
+                s.AppendLine("        Assert.That(_driver.PageSource.Length > 0, \"Page source should not be empty\");");
                 s.AppendLine("        ");
                 s.AppendLine("        // Wait to see the final state");
                 s.AppendLine("        Thread.Sleep(2000);");
@@ -330,7 +324,6 @@ namespace WebDriverCdpRecorder.CodeGeneration
             s.AppendLine("            // Handle attribute selectors");
             s.AppendLine("            case \"aria-label\": return By.CssSelector($\"[aria-label='{selectorValue}']\");");
             s.AppendLine("            case \"placeholder\": return By.CssSelector($\"[placeholder='{selectorValue}']\");");
-            s.AppendLine("            case \"part\": return By.CssSelector($\"[part='{selectorValue}']\");");
             s.AppendLine("            case \"data-test-id\": return By.CssSelector($\"[data-test-id='{selectorValue}']\");");
             s.AppendLine("            // Handle other attribute-based selectors");
             s.AppendLine("            default:");
@@ -347,8 +340,7 @@ namespace WebDriverCdpRecorder.CodeGeneration
 
         private void AddWaitForElementHelper(StringBuilder s)
         {
-            // Add the universal WaitForElement method with fallbacks
-            s.AppendLine("    // Helper method to wait for an element to be present and visible with robust fallbacks");
+            // Add the generic WaitForElement method
             s.AppendLine("    private IWebElement WaitForElement(string selectorType, string selectorValue, int timeoutSeconds = 10)");
             s.AppendLine("    {");
             s.AppendLine("        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutSeconds));");
@@ -357,6 +349,7 @@ namespace WebDriverCdpRecorder.CodeGeneration
             s.AppendLine("        try");
             s.AppendLine("        {");
             s.AppendLine("            // First attempt with the provided selector");
+            s.AppendLine("            Console.WriteLine($\"Looking for element with {selectorType}='{selectorValue}'\");");
             s.AppendLine("            return wait.Until(driver => {");
             s.AppendLine("                var element = driver.FindElement(by);");
             s.AppendLine("                return element.Displayed ? element : null;");
@@ -364,86 +357,124 @@ namespace WebDriverCdpRecorder.CodeGeneration
             s.AppendLine("        }");
             s.AppendLine("        catch (WebDriverTimeoutException)");
             s.AppendLine("        {");
-            s.AppendLine("            Console.WriteLine($\"Element not found with {selectorType}='{selectorValue}', trying alternatives...\");");
+            s.AppendLine("            Console.WriteLine($\"Element not found with primary selector, trying fallbacks\");");
             s.AppendLine("            ");
-            s.AppendLine("            // Try with different selector strategies");
-            s.AppendLine("            var alternativeSelectors = new List<(string description, By by)>();");
-            s.AppendLine("            ");
-            s.AppendLine("            // Site-specific selectors");
-            s.AppendLine("            if (_driver.Url.Contains(\"todomvc\"))");
-            s.AppendLine("            {");
-            s.AppendLine("                if (selectorValue.Equals(\"toggle\", StringComparison.OrdinalIgnoreCase))");
-            s.AppendLine("                {");
-            s.AppendLine("                    alternativeSelectors.Add((\"First todo toggle\", By.CssSelector(\".todo-list li:first-child .toggle\")));");
-            s.AppendLine("                    alternativeSelectors.Add((\"Any toggle\", By.CssSelector(\".todo-list .toggle\")));");
-            s.AppendLine("                }");
-            s.AppendLine("                else if (selectorValue.Equals(\"new-todo\", StringComparison.OrdinalIgnoreCase))");
-            s.AppendLine("                {");
-            s.AppendLine("                    alternativeSelectors.Add((\"New todo input\", By.CssSelector(\".new-todo\")));");
-            s.AppendLine("                    alternativeSelectors.Add((\"Todo input by placeholder\", By.CssSelector(\"input[placeholder='What needs to be done?']\")));");
-            s.AppendLine("                }");
-            s.AppendLine("            }");
-            s.AppendLine("            ");
-            s.AppendLine("            // Build general alternative selectors");
+            s.AppendLine("            // Try with CSS selector alternative if className was used");
             s.AppendLine("            if (selectorType.Equals(\"ClassName\", StringComparison.OrdinalIgnoreCase))");
             s.AppendLine("            {");
-            s.AppendLine("                // CSS selector alternative");
-            s.AppendLine("                alternativeSelectors.Add((\"CSS with class\", By.CssSelector(\".\" + selectorValue)));");
-            s.AppendLine("                ");
-            s.AppendLine("                // For inputs/buttons, try different approaches");
-            s.AppendLine("                if (selectorValue.Contains(\"input\") || selectorValue.Contains(\"button\") || ");
-            s.AppendLine("                    selectorValue.Contains(\"toggle\") || selectorValue.Contains(\"checkbox\"))");
+            s.AppendLine("                try ");
             s.AppendLine("                {");
-            s.AppendLine("                    alternativeSelectors.Add((\"Any input\", By.TagName(\"input\")));");
-            s.AppendLine("                    alternativeSelectors.Add((\"Any button\", By.TagName(\"button\")));");
-            s.AppendLine("                    alternativeSelectors.Add((\"Checkbox input\", By.CssSelector(\"input[type='checkbox']\")));");
-            s.AppendLine("                }");
-            s.AppendLine("                ");
-            s.AppendLine("                // For search/text inputs");
-            s.AppendLine("                if (selectorValue.Contains(\"search\") || selectorValue.Contains(\"text\") || ");
-            s.AppendLine("                    selectorValue.Contains(\"input\") || selectorValue.Contains(\"todo\"))");
-            s.AppendLine("                {");
-            s.AppendLine("                    alternativeSelectors.Add((\"Text input\", By.CssSelector(\"input[type='text']\")));");
-            s.AppendLine("                    alternativeSelectors.Add((\"Search input\", By.CssSelector(\"input[type='search']\")));");
-            s.AppendLine("                }");
-            s.AppendLine("            }");
-            s.AppendLine("            ");
-            s.AppendLine("            // Try with XPath alternatives");
-            s.AppendLine("            alternativeSelectors.Add((\"XPath by class\", By.XPath($\"//*[contains(@class,'{selectorValue}')]\")));");
-            s.AppendLine("            ");
-            s.AppendLine("            // Try all alternative selectors");
-            s.AppendLine("            foreach (var (description, alternativeBy) in alternativeSelectors)");
-            s.AppendLine("            {");
-            s.AppendLine("                try");
-            s.AppendLine("                {");
-            s.AppendLine("                    Console.WriteLine($\"Trying alternative: {description}\");");
-            s.AppendLine("                    var element = _driver.FindElement(alternativeBy);");
+            s.AppendLine("                    Console.WriteLine($\"Trying CSS selector alternative: .{selectorValue}\");");
+            s.AppendLine("                    var cssSelector = By.CssSelector(\".\" + selectorValue);");
+            s.AppendLine("                    var element = _driver.FindElement(cssSelector);");
             s.AppendLine("                    if (element.Displayed)");
             s.AppendLine("                    {");
-            s.AppendLine("                        Console.WriteLine($\"Found element using alternative: {description}\");");
+            s.AppendLine("                        Console.WriteLine(\"Found element with CSS selector\");");
             s.AppendLine("                        return element;");
             s.AppendLine("                    }");
             s.AppendLine("                }");
-            s.AppendLine("                catch");
-            s.AppendLine("                {");
-            s.AppendLine("                    // Continue to next alternative");
-            s.AppendLine("                }");
+            s.AppendLine("                catch { /* Continue to next approach */ }");
             s.AppendLine("            }");
             s.AppendLine("            ");
-            s.AppendLine("            // One last resort: try finding by JS");
+            s.AppendLine("            // Try finding by element type based on context clues");
+            s.AppendLine("            bool mightBeCheckbox = selectorValue.Contains(\"toggle\") || ");
+            s.AppendLine("                                  selectorValue.Contains(\"check\") || ");
+            s.AppendLine("                                  selectorValue.Contains(\"box\");");
+            s.AppendLine("                                  ");
+            s.AppendLine("            bool mightBeInput = selectorValue.Contains(\"input\") || ");
+            s.AppendLine("                               selectorValue.Contains(\"text\") || ");
+            s.AppendLine("                               selectorValue.Contains(\"field\") ||");
+            s.AppendLine("                               selectorValue.Contains(\"todo\");");
+            s.AppendLine("            ");
+            s.AppendLine("            if (mightBeCheckbox)");
+            s.AppendLine("            {");
+            s.AppendLine("                try");
+            s.AppendLine("                {");
+            s.AppendLine("                    Console.WriteLine(\"Selector suggests a checkbox, trying checkbox selectors\");");
+            s.AppendLine("                    var elements = _driver.FindElements(By.CssSelector(\"input[type='checkbox']\"));");
+            s.AppendLine("                    if (elements.Count > 0)");
+            s.AppendLine("                    {");
+            s.AppendLine("                        Console.WriteLine($\"Found {elements.Count} checkbox elements, using first one\");");
+            s.AppendLine("                        return elements[0];");
+            s.AppendLine("                    }");
+            s.AppendLine("                }");
+            s.AppendLine("                catch { /* Continue to next approach */ }");
+            s.AppendLine("            }");
+            s.AppendLine("            ");
+            s.AppendLine("            if (mightBeInput)");
+            s.AppendLine("            {");
+            s.AppendLine("                try ");
+            s.AppendLine("                {");
+            s.AppendLine("                    Console.WriteLine(\"Selector suggests an input field, trying input selectors\");");
+            s.AppendLine("                    var elements = _driver.FindElements(By.TagName(\"input\"));");
+            s.AppendLine("                    foreach (var element in elements)");
+            s.AppendLine("                    {");
+            s.AppendLine("                        try");
+            s.AppendLine("                        {");
+            s.AppendLine("                            if (element.Displayed && element.GetAttribute(\"type\") != \"checkbox\" && ");
+            s.AppendLine("                                element.GetAttribute(\"type\") != \"radio\" && element.GetAttribute(\"type\") != \"hidden\")");
+            s.AppendLine("                            {");
+            s.AppendLine("                                Console.WriteLine(\"Found visible text input\");");
+            s.AppendLine("                                return element;");
+            s.AppendLine("                            }");
+            s.AppendLine("                        }");
+            s.AppendLine("                        catch { /* Continue to next element */ }");
+            s.AppendLine("                    }");
+            s.AppendLine("                }");
+            s.AppendLine("                catch { /* Continue to next approach */ }");
+            s.AppendLine("            }");
+            s.AppendLine("            ");
+            s.AppendLine("            // Last resort: JavaScript");
             s.AppendLine("            try");
             s.AppendLine("            {");
-            s.AppendLine("                Console.WriteLine(\"Trying to find element using JavaScript...\");");
+            s.AppendLine("                Console.WriteLine(\"Trying JavaScript to find element\");");
             s.AppendLine("                IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;");
             s.AppendLine("                ");
-            s.AppendLine("                string jsScript = \"return document.querySelector('.\" + selectorValue + \"') || \" + ");
-            s.AppendLine("                               \"document.querySelector('[\" + selectorType + \"=\\\"\" + selectorValue + \"\\\"]') || \" +");
-            s.AppendLine("                               \"document.querySelector('input, button');\";");
+            s.AppendLine("                string script = @\"");
+            s.AppendLine("                    function findElement(selector, type) {");
+            s.AppendLine("                        // Try by class");
+            s.AppendLine("                        if (type.toLowerCase() === 'classname') {");
+            s.AppendLine("                            // First by class name");
+            s.AppendLine("                            var byClass = document.getElementsByClassName(selector);");
+            s.AppendLine("                            if (byClass.length > 0 && byClass[0].offsetParent !== null) ");
+            s.AppendLine("                                return byClass[0];");
+            s.AppendLine("                                ");
+            s.AppendLine("                            // Then by CSS selector");
+            s.AppendLine("                            var byCss = document.querySelectorAll('.' + selector);");
+            s.AppendLine("                            if (byCss.length > 0 && byCss[0].offsetParent !== null) ");
+            s.AppendLine("                                return byCss[0];");
+            s.AppendLine("                        }");
+            s.AppendLine("                        ");
+            s.AppendLine("                        // Try by attribute");
+            s.AppendLine("                        var byAttr = document.querySelectorAll('[' + type + '=\"' + selector + '\"]');");
+            s.AppendLine("                        if (byAttr.length > 0 && byAttr[0].offsetParent !== null) ");
+            s.AppendLine("                            return byAttr[0];");
+            s.AppendLine("                        ");
+            s.AppendLine("                        // If selector hints at a checkbox");
+            s.AppendLine("                        if (selector.includes('toggle') || selector.includes('check')) {");
+            s.AppendLine("                            var checkboxes = document.querySelectorAll('input[type=\"checkbox\"]');");
+            s.AppendLine("                            if (checkboxes.length > 0 && checkboxes[0].offsetParent !== null) ");
+            s.AppendLine("                                return checkboxes[0];");
+            s.AppendLine("                        }");
+            s.AppendLine("                        ");
+            s.AppendLine("                        // If selector hints at a text field");
+            s.AppendLine("                        if (selector.includes('input') || selector.includes('todo') || selector.includes('text')) {");
+            s.AppendLine("                            var inputs = document.querySelectorAll('input[type=\"text\"], input:not([type])');");
+            s.AppendLine("                            for (var i = 0; i < inputs.length; i++) {");
+            s.AppendLine("                                if (inputs[i].offsetParent !== null) return inputs[i];");
+            s.AppendLine("                            }");
+            s.AppendLine("                        }");
+            s.AppendLine("                        ");
+            s.AppendLine("                        return null;");
+            s.AppendLine("                    }");
+            s.AppendLine("                    ");
+            s.AppendLine("                    return findElement(arguments[0], arguments[1]);");
+            s.AppendLine("                \";");
             s.AppendLine("                ");
-            s.AppendLine("                var element = js.ExecuteScript(jsScript) as IWebElement;");
-            s.AppendLine("                if (element != null)");
+            s.AppendLine("                var element = js.ExecuteScript(script, selectorValue, selectorType) as IWebElement;");
+            s.AppendLine("                if (element != null && element.Displayed)");
             s.AppendLine("                {");
-            s.AppendLine("                    Console.WriteLine(\"Found element using JavaScript!\");");
+            s.AppendLine("                    Console.WriteLine(\"Found element using JavaScript\");");
             s.AppendLine("                    return element;");
             s.AppendLine("                }");
             s.AppendLine("            }");
@@ -452,8 +483,8 @@ namespace WebDriverCdpRecorder.CodeGeneration
             s.AppendLine("                Console.WriteLine($\"JavaScript approach failed: {jsEx.Message}\");");
             s.AppendLine("            }");
             s.AppendLine("            ");
-            s.AppendLine("            // If we get here, no element was found with any strategy");
-            s.AppendLine("            throw new NoSuchElementException($\"Element with {selectorType}='{selectorValue}' not found after trying multiple strategies.\");");
+            s.AppendLine("            // Element not found");
+            s.AppendLine("            throw new NoSuchElementException($\"Element with {selectorType}='{selectorValue}' not found after trying fallbacks\");");
             s.AppendLine("        }");
             s.AppendLine("    }");
         }

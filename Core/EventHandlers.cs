@@ -61,9 +61,9 @@ namespace WebDriverCdpRecorder.Core
                 string actionType = jsonObj["type"]?.ToString() ?? string.Empty;
                 string selectorType = jsonObj["selector"]?.ToString() ?? string.Empty;
                 string selectorValue = jsonObj["selectorValue"]?.ToString() ?? string.Empty;
-                string value = jsonObj["value"]?.ToString();
-                string tagName = jsonObj["tagName"]?.ToString();
-                string elementType = jsonObj["elementType"]?.ToString();
+                string? value = jsonObj["value"]?.ToString();
+                string? tagName = jsonObj["tagName"]?.ToString();
+                string? elementType = jsonObj["elementType"]?.ToString();
                 
                 Logger.LogEventHandler($"   -> Parsed: Type='{actionType}', Tag='{tagName}', ElType='{elementType}', SelType='{selectorType}', SelVal='{selectorValue}', Val='{value}'");
                 
