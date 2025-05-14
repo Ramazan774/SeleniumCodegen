@@ -15,7 +15,7 @@ namespace WebDriverCdpRecorder
             Console.WriteLine("===== WebDriverCdpRecorder =====");
             Console.WriteLine("Starting application...");
 
-            string featureName = args.Length > 0 ? args[0] : "ToDoApp";
+            string featureName = args.Length > 0 ? args[0] : "MyFeature";
             
             // Create and initialize recorder engine
             var recorder = new RecorderEngine(featureName);

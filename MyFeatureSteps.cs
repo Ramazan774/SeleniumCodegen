@@ -7,11 +7,11 @@ using System.Collections.Generic;
 using System.Threading;
 
 [Binding]
-public class ToDoAppSteps
+public class MyFeatureSteps
 {
     private readonly IWebDriver _driver;
 
-    public ToDoAppSteps(IWebDriver driver)
+    public MyFeatureSteps(IWebDriver driver)
     {
         _driver = driver ?? throw new ArgumentNullException(nameof(driver));
         
