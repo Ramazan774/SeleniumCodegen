@@ -1,49 +1,49 @@
 using System;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 using WebDriverCdpRecorder.Utils;
 
 namespace WebDriverCdpRecorder.Browser
 {
     public class BrowserFactory
     {
-        public static IWebDriver CreateBrowser(string browserType = "chrome")
+        /// <summary>
+        /// Creates a Chrome WebDriver with its service
+        /// </summary>
+        /// <returns>A tuple containing the driver and service</returns>
+        public static (IWebDriver driver, ChromeDriverService service) CreateChromeDriver()
         {
-            Logger.Log($"Creating {browserType} browser...");
+            Logger.Log("Creating Chrome browser with service...");
             
             try
             {
-                WebDriverFactory.BrowserType type = WebDriverFactory.BrowserType.Chrome;
+                // Create Chrome driver service
+                ChromeDriverService service = ChromeDriverService.CreateDefaultService();
+                service.EnableVerboseLogging = true;
+                service.EnableAppendLog = true;
+                service.SuppressInitialDiagnosticInformation = false;
                 
-                // Parse the browser type (case insensitive)
-                if (!string.IsNullOrEmpty(browserType))
-                {
-                    switch (browserType.ToLowerInvariant())
-                    {
-                        case "firefox":
-                            type = WebDriverFactory.BrowserType.Firefox;
-                            break;
-                        case "edge":
-                            type = WebDriverFactory.BrowserType.Edge;
-                            break;
-                        case "chrome":
-                        default:
-                            type = WebDriverFactory.BrowserType.Chrome;
-                            break;
-                    }
-                }
+                // Create Chrome options
+                ChromeOptions options = new ChromeOptions();
+                // Add any required options here
                 
-                IWebDriver driver = WebDriverFactory.CreateDriver(type);
-                Logger.Log($"SUCCESS: {browserType} browser initialized!");
-                return driver;
+                // Create and return the driver with its service
+                IWebDriver driver = new ChromeDriver(service, options);
+                Logger.Log("SUCCESS: Chrome browser with service initialized!");
+                return (driver, service);
             }
             catch (Exception ex)
             {
-                Logger.Log($"FAIL: Failed to initialize {browserType} browser: {ex.Message}");
-                return null;
+                Logger.Log($"FAIL: Failed to initialize Chrome browser with service: {ex.Message}");
+                throw new WebDriverException("Failed to create Chrome driver with service", ex);
             }
         }
 
-        public static void SafeQuit(IWebDriver driver)
+        /// <summary>
+        /// Safely quits a WebDriver, handling null and exceptions
+        /// </summary>
+        /// <param name="driver">The WebDriver to quit</param>
+        public static void SafeQuit(IWebDriver? driver)
         {
             if (driver == null)
                 return;
