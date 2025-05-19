@@ -14,7 +14,7 @@ namespace SpecFlowTestGenerator
         {
             Console.WriteLine("===== SpecFlowTestGenerator =====");
             Console.WriteLine("Starting application...");
-            Console.WriteLine("This version supports Chrome DevTools Protocol versions 127-136");
+            // Console.WriteLine("This version supports Chrome DevTools Protocol versions 127-136");
 
             string featureName = args.Length > 0 ? args[0] : "MyFeature";
             

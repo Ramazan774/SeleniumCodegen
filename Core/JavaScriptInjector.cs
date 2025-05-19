@@ -19,13 +19,21 @@ namespace SpecFlowTestGenerator.Core
     /// </summary>
     public class JavaScriptInjector
     {
-        private readonly DevToolsSessionManager _sessionManager;
+        private DevToolsSessionManager? _sessionManager;
         private IJavaScriptInjectionAdapter? _injectionAdapter;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        public JavaScriptInjector(DevToolsSessionManager sessionManager)
+        public JavaScriptInjector()
+        {
+            // Empty constructor for circular dependency resolution
+        }
+
+        /// <summary>
+        /// Set the session manager (for breaking circular dependencies)
+        /// </summary>
+        public void SetSessionManager(DevToolsSessionManager sessionManager)
         {
             _sessionManager = sessionManager ?? throw new ArgumentNullException(nameof(sessionManager));
         }
@@ -35,7 +43,7 @@ namespace SpecFlowTestGenerator.Core
         /// </summary>
         public void SetAdapter(IJavaScriptInjectionAdapter adapter)
         {
-            _injectionAdapter = adapter;
+            _injectionAdapter = adapter ?? throw new ArgumentNullException(nameof(adapter));
         }
 
         /// <summary>
@@ -43,6 +51,12 @@ namespace SpecFlowTestGenerator.Core
         /// </summary>
         public async Task InjectListeners()
         {
+            if (_sessionManager == null)
+            {
+                Logger.Log("ERROR: Cannot inject JavaScript - SessionManager not set");
+                return;
+            }
+
             if (_injectionAdapter == null)
             {
                 Logger.Log("ERROR: Cannot inject JavaScript - Injection adapter not available");
@@ -73,6 +87,9 @@ namespace SpecFlowTestGenerator.Core
         /// </summary>
         private string GetInjectionScript()
         {
+            if (_sessionManager == null)
+                throw new InvalidOperationException("SessionManager not set");
+
             string bindingName = _sessionManager.BindingName;
             
             return @"(function() {
@@ -81,7 +98,6 @@ namespace SpecFlowTestGenerator.Core
                     return;
                 }
                 
-                // Rest of the script is unchanged
                 console.log('Attaching CDP recorder listeners');
                 window.cdpRecorderListenersAttached = true;
                 
@@ -262,68 +278,4 @@ namespace SpecFlowTestGenerator.Core
                 });
         }
     }
-
-    // /// <summary>
-    // /// V130 specific JavaScript injection adapter
-    // /// </summary>
-    // public class V130JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
-    // {
-    //     private readonly OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains _domains;
-
-    //     public V130JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains domains)
-    //     {
-    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
-    //     }
-
-    //     public async Task AddScriptToEvaluateOnNewDocument(string script)
-    //     {
-    //         await _domains.Page.AddScriptToEvaluateOnNewDocument(
-    //             new OpenQA.Selenium.DevTools.V130.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
-    //             { 
-    //                 Source = script 
-    //             });
-    //     }
-
-    //     public async Task EvaluateScript(string script)
-    //     {
-    //         await _domains.Runtime.Evaluate(
-    //             new OpenQA.Selenium.DevTools.V130.Runtime.EvaluateCommandSettings 
-    //             { 
-    //                 Expression = script, 
-    //                 Silent = false 
-    //             });
-    //     }
-    // }
-
-    // /// <summary>
-    // /// V127 specific JavaScript injection adapter
-    // /// </summary>
-    // public class V127JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
-    // {
-    //     private readonly OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains _domains;
-
-    //     public V127JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains domains)
-    //     {
-    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
-    //     }
-
-    //     public async Task AddScriptToEvaluateOnNewDocument(string script)
-    //     {
-    //         await _domains.Page.AddScriptToEvaluateOnNewDocument(
-    //             new OpenQA.Selenium.DevTools.V127.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
-    //             { 
-    //                 Source = script 
-    //             });
-    //     }
-
-    //     public async Task EvaluateScript(string script)
-    //     {
-    //         await _domains.Runtime.Evaluate(
-    //             new OpenQA.Selenium.DevTools.V127.Runtime.EvaluateCommandSettings 
-    //             { 
-    //                 Expression = script, 
-    //                 Silent = false 
-    //             });
-    //     }
-    // }
 }

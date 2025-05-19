@@ -16,12 +16,12 @@ namespace SpecFlowTestGenerator.Core
     public class RecorderEngine
     {
         private readonly RecorderState _state;
-        private readonly EventHandlers _eventHandlers;
-        private readonly DevToolsSessionManager _sessionManager;
-        private readonly JavaScriptInjector _jsInjector;
-        private readonly SpecFlowGenerator _specFlowGenerator;
+        private EventHandlers _eventHandlers;
+        private JavaScriptInjector _jsInjector;
+        private DevToolsSessionManager _sessionManager;
         private IWebDriver? _driver;
         private ChromeDriverService? _chromeService;
+        private readonly SpecFlowGenerator _specFlowGenerator;
         
         /// <summary>
         /// Public property to check/set recording status
@@ -40,19 +40,13 @@ namespace SpecFlowTestGenerator.Core
             _state = new RecorderState(initialFeatureName);
             _eventHandlers = new EventHandlers(_state);
             
-            // Create instances with proper initialization order to avoid circular dependency
-            _jsInjector = new JavaScriptInjector(null!); // Temporarily pass null
-            _sessionManager = new DevToolsSessionManager(_eventHandlers, _jsInjector);
+            // Break the circular dependency by using empty constructors
+            _jsInjector = new JavaScriptInjector();
+            _sessionManager = new DevToolsSessionManager();
             
-            // Set the sessionManager on jsInjector to complete the dependency chain
-            var field = _jsInjector.GetType().GetField("_sessionManager", 
-                System.Reflection.BindingFlags.NonPublic | 
-                System.Reflection.BindingFlags.Instance);
-                
-            if (field != null)
-            {
-                field.SetValue(_jsInjector, _sessionManager);
-            }
+            // Set up the dependencies
+            _jsInjector.SetSessionManager(_sessionManager);
+            _sessionManager.SetDependencies(_eventHandlers, _jsInjector);
             
             _specFlowGenerator = new SpecFlowGenerator();
         }
@@ -75,7 +69,7 @@ namespace SpecFlowTestGenerator.Core
                 _driver = driver;
                 _chromeService = service;
 
-                // Initialize DevTools session with multi-version support
+                // Initialize DevTools session
                 if (!await _sessionManager.InitializeSession(_driver))
                 {
                     Logger.Log("Failed to initialize DevTools session.");
@@ -85,7 +79,6 @@ namespace SpecFlowTestGenerator.Core
                 // Inject JavaScript listeners
                 await _jsInjector.InjectListeners();
                 
-                Logger.Log("SUCCESS: Recorder engine initialized.");
                 return true;
             }
             catch (Exception ex)
@@ -187,15 +180,23 @@ namespace SpecFlowTestGenerator.Core
         /// </summary>
         public async Task CleanUp()
         {
-            // Event handlers are now managed by the adapter pattern,
-            // so we don't need to manually unsubscribe here
-            
             // Clean up DevTools session
             await _sessionManager.CleanUpSession();
 
             // Quit driver
-            BrowserFactory.SafeQuit(_driver);
-            _driver = null;
+            if (_driver != null)
+            {
+                try
+                {
+                    _driver.Quit();
+                    _driver.Dispose();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log($"INFO: Error during driver cleanup: {ex.Message}");
+                }
+                _driver = null;
+            }
 
             // Dispose Chrome service
             _chromeService?.Dispose();
