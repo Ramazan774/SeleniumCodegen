@@ -1,19 +1,20 @@
 using System;
 using System.Threading.Tasks;
-using WebDriverCdpRecorder.Core;
-using WebDriverCdpRecorder.Utils;
+using SpecFlowTestGenerator.Core;
+using SpecFlowTestGenerator.Utils;
 
-namespace WebDriverCdpRecorder
+namespace SpecFlowTestGenerator
 {
     /// <summary>
-    /// Main entry point for the WebDriverCdpRecorder application
+    /// Main entry point for the SpecFlowTestGenerator application
     /// </summary>
     class Program
     {
         static async Task Main(string[] args)
         {
-            Console.WriteLine("===== WebDriverCdpRecorder =====");
+            Console.WriteLine("===== SpecFlowTestGenerator =====");
             Console.WriteLine("Starting application...");
+            Console.WriteLine("This version supports Chrome DevTools Protocol versions 127-136");
 
             string featureName = args.Length > 0 ? args[0] : "MyFeature";
             

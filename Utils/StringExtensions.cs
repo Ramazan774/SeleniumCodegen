@@ -1,6 +1,6 @@
 using System;
 
-namespace WebDriverCdpRecorder.Utils
+namespace SpecFlowTestGenerator.Utils
 {
     public static class StringExtensions
     {

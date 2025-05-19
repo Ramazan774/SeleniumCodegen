@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace WebDriverCdpRecorder.Utils
+namespace SpecFlowTestGenerator.Utils
 {
     /// <summary>
     /// Provides logging functionality for the application

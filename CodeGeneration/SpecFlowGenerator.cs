@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using WebDriverCdpRecorder.Models;
-using WebDriverCdpRecorder.Utils;
+using SpecFlowTestGenerator.Models;
+using SpecFlowTestGenerator.Utils;
 
-namespace WebDriverCdpRecorder.CodeGeneration
+namespace SpecFlowTestGenerator.CodeGeneration
 {
     /// <summary>
     /// Generates SpecFlow feature and steps files from recorded actions

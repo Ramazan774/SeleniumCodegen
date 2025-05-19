@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using WebDriverCdpRecorder.Models;
+using SpecFlowTestGenerator.Models;
 
-namespace WebDriverCdpRecorder.CodeGeneration
+namespace SpecFlowTestGenerator.CodeGeneration
 {
     /// <summary>
     /// Builds SpecFlow feature files from recorded actions

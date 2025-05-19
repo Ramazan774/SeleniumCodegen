@@ -1,4 +1,4 @@
-namespace WebDriverCdpRecorder.Models
+namespace SpecFlowTestGenerator.Models
 {
     /// <summary>
     /// Represents an action sent from JavaScript to C#

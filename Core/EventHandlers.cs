@@ -1,19 +1,27 @@
 using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Linq;
-using OpenQA.Selenium.DevTools.V136.Page;
-using OpenQA.Selenium.DevTools.V136.Runtime;
-using WebDriverCdpRecorder.Models;
-using WebDriverCdpRecorder.Utils;
+using SpecFlowTestGenerator.Models;
+using SpecFlowTestGenerator.Utils;
 
-namespace WebDriverCdpRecorder.Core
+namespace SpecFlowTestGenerator.Core
 {
+    /// <summary>
+    /// Interface for version-specific event handling adapters
+    /// </summary>
+    public interface IDevToolsEventAdapter
+    {
+        void RegisterEventHandlers(EventHandlers handler);
+        void UnregisterEventHandlers();
+    }
+
     /// <summary>
     /// Handles DevTools protocol events
     /// </summary>
     public class EventHandlers
     {
         private readonly RecorderState _state;
+        private IDevToolsEventAdapter? _eventAdapter;
 
         /// <summary>
         /// Constructor
@@ -24,40 +32,50 @@ namespace WebDriverCdpRecorder.Core
         }
 
         /// <summary>
-        /// Handles frame navigation events
+        /// Sets the version-specific adapter
         /// </summary>
-        public void HandleFrameNavigated(object? sender, FrameNavigatedEventArgs e)
+        public void SetAdapter(IDevToolsEventAdapter adapter)
         {
-            if (!_state.IsRecording || e.Frame == null || e.Frame.ParentId != null)
+            _eventAdapter?.UnregisterEventHandlers();
+            _eventAdapter = adapter;
+            _eventAdapter.RegisterEventHandlers(this);
+        }
+
+        /// <summary>
+        /// Handles frame navigation events generically
+        /// </summary>
+        public void HandleFrameNavigated(string frameId, string? parentId, string url, string? urlFragment)
+        {
+            if (!_state.IsRecording || parentId != null)
                 return;
 
-            string url = e.Frame.UrlFragment ?? e.Frame.Url;
-            if (url.Equals("about:blank", StringComparison.OrdinalIgnoreCase))
+            string navigatedUrl = urlFragment ?? url;
+            if (navigatedUrl.Equals("about:blank", StringComparison.OrdinalIgnoreCase))
                 return;
 
-            Logger.LogEventHandler($"---> EVENT: FrameNavigated to: {url}");
+            Logger.LogEventHandler($"---> EVENT: FrameNavigated to: {navigatedUrl}");
             
             var lastAction = _state.GetLastAction();
-            if (lastAction == null || !(lastAction.ActionType == "Navigate" && lastAction.Value == url))
+            if (lastAction == null || !(lastAction.ActionType == "Navigate" && lastAction.Value == navigatedUrl))
             {
-                _state.AddAction("Navigate", null, null, url);
+                _state.AddAction("Navigate", null, null, navigatedUrl);
             }
         }
 
         /// <summary>
         /// Handles JavaScript binding calls from the enhanced selector system
         /// </summary>
-        public void HandleBindingCalled(object? sender, BindingCalledEventArgs e)
+        public void HandleBindingCalled(string name, string payload)
         {
-            if (!_state.IsRecording || e.Name != "sendActionToCSharp")
+            if (!_state.IsRecording || name != "sendActionToCSharp")
                 return;
 
-            Logger.LogEventHandler($"---> EVENT: JS Binding Called. Payload: {e.Payload}");
+            Logger.LogEventHandler($"---> EVENT: JS Binding Called. Payload: {payload}");
             
             try
             {
                 // Modified to handle the updated JS selector format
-                var jsonObj = JObject.Parse(e.Payload);
+                var jsonObj = JObject.Parse(payload);
                 string actionType = jsonObj["type"]?.ToString() ?? string.Empty;
                 string selectorType = jsonObj["selector"]?.ToString() ?? string.Empty;
                 string selectorValue = jsonObj["selectorValue"]?.ToString() ?? string.Empty;
@@ -90,29 +108,3 @@ namespace WebDriverCdpRecorder.Core
                         else if (tagName?.ToUpperInvariant() == "INPUT" || tagName?.ToUpperInvariant() == "TEXTAREA")
                         {
                             _state.AddAction("SendKeys", selectorType, selectorValue, value, tagName, elementType);
-                        }
-                        else
-                        {
-                            // For custom elements, still record the change
-                            _state.AddAction("SendKeys", selectorType, selectorValue, value, tagName, elementType);
-                        }
-                        break;
-                        
-                    case "enterkey":
-                        // Pass value along, generation logic will decide if it's needed
-                        _state.AddAction("SendKeysEnter", selectorType, selectorValue, value, tagName, elementType);
-                        break;
-                        
-                    case "submit":
-                        // Record form submissions
-                        _state.AddAction("Submit", selectorType, selectorValue, value, tagName, elementType);
-                        break;
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.LogEventHandler($"   -> FAIL: Processing binding: {ex.Message}");
-            }
-        }
-    }
-}

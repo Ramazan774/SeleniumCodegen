@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using WebDriverCdpRecorder.Browser;
-using WebDriverCdpRecorder.CodeGeneration;
-using WebDriverCdpRecorder.Models;
-using WebDriverCdpRecorder.Utils;
+using SpecFlowTestGenerator.Browser;
+using SpecFlowTestGenerator.CodeGeneration;
+using SpecFlowTestGenerator.Models;
+using SpecFlowTestGenerator.Utils;
 
-namespace WebDriverCdpRecorder.Core
+namespace SpecFlowTestGenerator.Core
 {
     /// <summary>
     /// Main engine for the recorder application
@@ -16,12 +16,12 @@ namespace WebDriverCdpRecorder.Core
     public class RecorderEngine
     {
         private readonly RecorderState _state;
+        private readonly EventHandlers _eventHandlers;
         private readonly DevToolsSessionManager _sessionManager;
+        private readonly JavaScriptInjector _jsInjector;
+        private readonly SpecFlowGenerator _specFlowGenerator;
         private IWebDriver? _driver;
         private ChromeDriverService? _chromeService;
-        private EventHandlers? _eventHandlers;
-        private JavaScriptInjector? _jsInjector;
-        private readonly SpecFlowGenerator _specFlowGenerator;
         
         /// <summary>
         /// Public property to check/set recording status
@@ -38,7 +38,22 @@ namespace WebDriverCdpRecorder.Core
         public RecorderEngine(string initialFeatureName = "DefaultFeature")
         {
             _state = new RecorderState(initialFeatureName);
-            _sessionManager = new DevToolsSessionManager();
+            _eventHandlers = new EventHandlers(_state);
+            
+            // Create instances with proper initialization order to avoid circular dependency
+            _jsInjector = new JavaScriptInjector(null!); // Temporarily pass null
+            _sessionManager = new DevToolsSessionManager(_eventHandlers, _jsInjector);
+            
+            // Set the sessionManager on jsInjector to complete the dependency chain
+            var field = _jsInjector.GetType().GetField("_sessionManager", 
+                System.Reflection.BindingFlags.NonPublic | 
+                System.Reflection.BindingFlags.Instance);
+                
+            if (field != null)
+            {
+                field.SetValue(_jsInjector, _sessionManager);
+            }
+            
             _specFlowGenerator = new SpecFlowGenerator();
         }
 
@@ -60,33 +75,18 @@ namespace WebDriverCdpRecorder.Core
                 _driver = driver;
                 _chromeService = service;
 
-                // Initialize DevTools session
+                // Initialize DevTools session with multi-version support
                 if (!await _sessionManager.InitializeSession(_driver))
                 {
                     Logger.Log("Failed to initialize DevTools session.");
                     return false;
                 }
 
-                // Setup event handlers
-                _eventHandlers = new EventHandlers(_state);
-                if (_sessionManager.Domains != null)
-                {
-                    Logger.Log("Subscribing to events...");
-                    _sessionManager.Domains.Page.FrameNavigated += _eventHandlers.HandleFrameNavigated;
-                    _sessionManager.Domains.Runtime.BindingCalled += _eventHandlers.HandleBindingCalled;
-                    Logger.Log("SUCCESS: Subscribed to events.");
-
-                    // Inject JavaScript listeners
-                    _jsInjector = new JavaScriptInjector(_sessionManager);
-                    await _jsInjector.InjectListeners();
-                    
-                    return true;
-                }
-                else
-                {
-                    Logger.Log("DevTools domains not available.");
-                    return false;
-                }
+                // Inject JavaScript listeners
+                await _jsInjector.InjectListeners();
+                
+                Logger.Log("SUCCESS: Recorder engine initialized.");
+                return true;
             }
             catch (Exception ex)
             {
@@ -187,20 +187,9 @@ namespace WebDriverCdpRecorder.Core
         /// </summary>
         public async Task CleanUp()
         {
-            // Unsubscribe from events
-            if (_sessionManager.Domains != null && _eventHandlers != null)
-            {
-                try
-                {
-                    _sessionManager.Domains.Page.FrameNavigated -= _eventHandlers.HandleFrameNavigated;
-                    _sessionManager.Domains.Runtime.BindingCalled -= _eventHandlers.HandleBindingCalled;
-                }
-                catch
-                {
-                    // Ignore errors during event unsubscription
-                }
-            }
-
+            // Event handlers are now managed by the adapter pattern,
+            // so we don't need to manually unsubscribe here
+            
             // Clean up DevTools session
             await _sessionManager.CleanUpSession();
 

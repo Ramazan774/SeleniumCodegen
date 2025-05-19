@@ -1,18 +1,26 @@
 using System;
 using System.Threading.Tasks;
-using OpenQA.Selenium.DevTools.V136.Page;
-using OpenQA.Selenium.DevTools.V136.Runtime;
-using WebDriverCdpRecorder.Browser;
-using WebDriverCdpRecorder.Utils;
+using SpecFlowTestGenerator.Browser;
+using SpecFlowTestGenerator.Utils;
 
-namespace WebDriverCdpRecorder.Core
+namespace SpecFlowTestGenerator.Core
 {
+    /// <summary>
+    /// Interface for version-specific JavaScript injection implementations
+    /// </summary>
+    public interface IJavaScriptInjectionAdapter
+    {
+        Task AddScriptToEvaluateOnNewDocument(string script);
+        Task EvaluateScript(string script);
+    }
+
     /// <summary>
     /// Handles injection of JavaScript code for event monitoring
     /// </summary>
     public class JavaScriptInjector
     {
         private readonly DevToolsSessionManager _sessionManager;
+        private IJavaScriptInjectionAdapter? _injectionAdapter;
 
         /// <summary>
         /// Constructor
@@ -23,13 +31,21 @@ namespace WebDriverCdpRecorder.Core
         }
 
         /// <summary>
+        /// Sets the version-specific adapter
+        /// </summary>
+        public void SetAdapter(IJavaScriptInjectionAdapter adapter)
+        {
+            _injectionAdapter = adapter;
+        }
+
+        /// <summary>
         /// Injects listener script into the page
         /// </summary>
         public async Task InjectListeners()
         {
-            if (_sessionManager.Domains == null)
+            if (_injectionAdapter == null)
             {
-                Logger.Log("ERROR: Cannot inject JavaScript - DevTools domains not available");
+                Logger.Log("ERROR: Cannot inject JavaScript - Injection adapter not available");
                 return;
             }
 
@@ -39,12 +55,10 @@ namespace WebDriverCdpRecorder.Core
             try
             {
                 // Add script to evaluate on new document loads
-                await _sessionManager.Domains.Page.AddScriptToEvaluateOnNewDocument(
-                    new AddScriptToEvaluateOnNewDocumentCommandSettings { Source = script });
+                await _injectionAdapter.AddScriptToEvaluateOnNewDocument(script);
                 
                 // Evaluate script on current document
-                await _sessionManager.Domains.Runtime.Evaluate(
-                    new EvaluateCommandSettings { Expression = script, Silent = false });
+                await _injectionAdapter.EvaluateScript(script);
                 
                 Logger.Log("SUCCESS: JavaScript injection completed.");
             }
@@ -67,6 +81,7 @@ namespace WebDriverCdpRecorder.Core
                     return;
                 }
                 
+                // Rest of the script is unchanged
                 console.log('Attaching CDP recorder listeners');
                 window.cdpRecorderListenersAttached = true;
                 
@@ -79,11 +94,11 @@ namespace WebDriverCdpRecorder.Core
                     
                     try {
                         // Try data-test attributes first (best practice for testing)
-                        const testId = el.getAttribute('data-test-id') || 
-                                     el.getAttribute('data-testid') || 
+                        const testId = el.getAttribute('data-testid') || 
+                                     el.getAttribute('data-test-id') || 
                                      el.getAttribute('data-test');
                         if (testId) {
-                            return { type: 'data-test-id', value: testId };
+                            return { type: 'data-testid', value: testId };
                         }
                         
                         // ID is unique and reliable
@@ -213,6 +228,102 @@ namespace WebDriverCdpRecorder.Core
                 
                 console.log('CDP Recorder initialized successfully');
             })();";
+        }
+    }
+
+    /// <summary>
+    /// V136 specific JavaScript injection adapter
+    /// </summary>
+    public class V136JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
+    {
+        private readonly OpenQA.Selenium.DevTools.V136.DevToolsSessionDomains _domains;
+
+        public V136JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V136.DevToolsSessionDomains domains)
+        {
+            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+        }
+
+        public async Task AddScriptToEvaluateOnNewDocument(string script)
+        {
+            await _domains.Page.AddScriptToEvaluateOnNewDocument(
+                new OpenQA.Selenium.DevTools.V136.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
+                { 
+                    Source = script 
+                });
+        }
+
+        public async Task EvaluateScript(string script)
+        {
+            await _domains.Runtime.Evaluate(
+                new OpenQA.Selenium.DevTools.V136.Runtime.EvaluateCommandSettings 
+                { 
+                    Expression = script, 
+                    Silent = false 
+                });
+        }
+    }
+
+    /// <summary>
+    /// V130 specific JavaScript injection adapter
+    /// </summary>
+    public class V130JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
+    {
+        private readonly OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains _domains;
+
+        public V130JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains domains)
+        {
+            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+        }
+
+        public async Task AddScriptToEvaluateOnNewDocument(string script)
+        {
+            await _domains.Page.AddScriptToEvaluateOnNewDocument(
+                new OpenQA.Selenium.DevTools.V130.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
+                { 
+                    Source = script 
+                });
+        }
+
+        public async Task EvaluateScript(string script)
+        {
+            await _domains.Runtime.Evaluate(
+                new OpenQA.Selenium.DevTools.V130.Runtime.EvaluateCommandSettings 
+                { 
+                    Expression = script, 
+                    Silent = false 
+                });
+        }
+    }
+
+    /// <summary>
+    /// V127 specific JavaScript injection adapter
+    /// </summary>
+    public class V127JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
+    {
+        private readonly OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains _domains;
+
+        public V127JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains domains)
+        {
+            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+        }
+
+        public async Task AddScriptToEvaluateOnNewDocument(string script)
+        {
+            await _domains.Page.AddScriptToEvaluateOnNewDocument(
+                new OpenQA.Selenium.DevTools.V127.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
+                { 
+                    Source = script 
+                });
+        }
+
+        public async Task EvaluateScript(string script)
+        {
+            await _domains.Runtime.Evaluate(
+                new OpenQA.Selenium.DevTools.V127.Runtime.EvaluateCommandSettings 
+                { 
+                    Expression = script, 
+                    Silent = false 
+                });
         }
     }
 }

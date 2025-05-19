@@ -1,4 +1,4 @@
-namespace WebDriverCdpRecorder.Models
+namespace SpecFlowTestGenerator.Models
 {
     /// <summary>
     /// Represents a user action captured during recording

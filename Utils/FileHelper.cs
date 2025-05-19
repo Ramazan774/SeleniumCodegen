@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
-namespace WebDriverCdpRecorder.Utils
+namespace SpecFlowTestGenerator.Utils
 {
     /// <summary>
     /// Provides file operations helper methods
