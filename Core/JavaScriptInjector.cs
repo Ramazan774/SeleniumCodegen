@@ -263,67 +263,67 @@ namespace SpecFlowTestGenerator.Core
         }
     }
 
-    /// <summary>
-    /// V130 specific JavaScript injection adapter
-    /// </summary>
-    public class V130JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
-    {
-        private readonly OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains _domains;
+    // /// <summary>
+    // /// V130 specific JavaScript injection adapter
+    // /// </summary>
+    // public class V130JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
+    // {
+    //     private readonly OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains _domains;
 
-        public V130JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains domains)
-        {
-            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
-        }
+    //     public V130JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains domains)
+    //     {
+    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+    //     }
 
-        public async Task AddScriptToEvaluateOnNewDocument(string script)
-        {
-            await _domains.Page.AddScriptToEvaluateOnNewDocument(
-                new OpenQA.Selenium.DevTools.V130.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
-                { 
-                    Source = script 
-                });
-        }
+    //     public async Task AddScriptToEvaluateOnNewDocument(string script)
+    //     {
+    //         await _domains.Page.AddScriptToEvaluateOnNewDocument(
+    //             new OpenQA.Selenium.DevTools.V130.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
+    //             { 
+    //                 Source = script 
+    //             });
+    //     }
 
-        public async Task EvaluateScript(string script)
-        {
-            await _domains.Runtime.Evaluate(
-                new OpenQA.Selenium.DevTools.V130.Runtime.EvaluateCommandSettings 
-                { 
-                    Expression = script, 
-                    Silent = false 
-                });
-        }
-    }
+    //     public async Task EvaluateScript(string script)
+    //     {
+    //         await _domains.Runtime.Evaluate(
+    //             new OpenQA.Selenium.DevTools.V130.Runtime.EvaluateCommandSettings 
+    //             { 
+    //                 Expression = script, 
+    //                 Silent = false 
+    //             });
+    //     }
+    // }
 
-    /// <summary>
-    /// V127 specific JavaScript injection adapter
-    /// </summary>
-    public class V127JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
-    {
-        private readonly OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains _domains;
+    // /// <summary>
+    // /// V127 specific JavaScript injection adapter
+    // /// </summary>
+    // public class V127JavaScriptInjectionAdapter : IJavaScriptInjectionAdapter
+    // {
+    //     private readonly OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains _domains;
 
-        public V127JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains domains)
-        {
-            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
-        }
+    //     public V127JavaScriptInjectionAdapter(OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains domains)
+    //     {
+    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+    //     }
 
-        public async Task AddScriptToEvaluateOnNewDocument(string script)
-        {
-            await _domains.Page.AddScriptToEvaluateOnNewDocument(
-                new OpenQA.Selenium.DevTools.V127.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
-                { 
-                    Source = script 
-                });
-        }
+    //     public async Task AddScriptToEvaluateOnNewDocument(string script)
+    //     {
+    //         await _domains.Page.AddScriptToEvaluateOnNewDocument(
+    //             new OpenQA.Selenium.DevTools.V127.Page.AddScriptToEvaluateOnNewDocumentCommandSettings 
+    //             { 
+    //                 Source = script 
+    //             });
+    //     }
 
-        public async Task EvaluateScript(string script)
-        {
-            await _domains.Runtime.Evaluate(
-                new OpenQA.Selenium.DevTools.V127.Runtime.EvaluateCommandSettings 
-                { 
-                    Expression = script, 
-                    Silent = false 
-                });
-        }
-    }
+    //     public async Task EvaluateScript(string script)
+    //     {
+    //         await _domains.Runtime.Evaluate(
+    //             new OpenQA.Selenium.DevTools.V127.Runtime.EvaluateCommandSettings 
+    //             { 
+    //                 Expression = script, 
+    //                 Silent = false 
+    //             });
+    //     }
+    // }
 }

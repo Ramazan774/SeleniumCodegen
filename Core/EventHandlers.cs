@@ -108,3 +108,163 @@ namespace SpecFlowTestGenerator.Core
                         else if (tagName?.ToUpperInvariant() == "INPUT" || tagName?.ToUpperInvariant() == "TEXTAREA")
                         {
                             _state.AddAction("SendKeys", selectorType, selectorValue, value, tagName, elementType);
+                        }
+                        else
+                        {
+                            // For custom elements, still record the change
+                            _state.AddAction("SendKeys", selectorType, selectorValue, value, tagName, elementType);
+                        }
+                        break;
+                        
+                    case "enterkey":
+                        // Pass value along, generation logic will decide if it's needed
+                        _state.AddAction("SendKeysEnter", selectorType, selectorValue, value, tagName, elementType);
+                        break;
+                        
+                    case "submit":
+                        // Record form submissions
+                        _state.AddAction("Submit", selectorType, selectorValue, value, tagName, elementType);
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogEventHandler($"   -> FAIL: Processing binding: {ex.Message}");
+            }
+        }
+    }
+
+    // Version-specific implementations
+
+    /// <summary>
+    /// V136 specific event adapter
+    /// </summary>
+    public class V136EventAdapter : IDevToolsEventAdapter
+    {
+        private readonly OpenQA.Selenium.DevTools.V136.DevToolsSessionDomains _domains;
+        private EventHandler<OpenQA.Selenium.DevTools.V136.Page.FrameNavigatedEventArgs>? _frameNavigatedHandler;
+        private EventHandler<OpenQA.Selenium.DevTools.V136.Runtime.BindingCalledEventArgs>? _bindingCalledHandler;
+
+        public V136EventAdapter(OpenQA.Selenium.DevTools.V136.DevToolsSessionDomains domains)
+        {
+            _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+        }
+
+        public void RegisterEventHandlers(EventHandlers handler)
+        {
+            _frameNavigatedHandler = (sender, e) => 
+                handler.HandleFrameNavigated(
+                    e.Frame.Id, 
+                    e.Frame.ParentId, 
+                    e.Frame.Url, 
+                    e.Frame.UrlFragment);
+            
+            _bindingCalledHandler = (sender, e) => 
+                handler.HandleBindingCalled(e.Name, e.Payload);
+            
+            _domains.Page.FrameNavigated += _frameNavigatedHandler;
+            _domains.Runtime.BindingCalled += _bindingCalledHandler;
+            
+            Logger.Log("SUCCESS: Registered V136 event handlers");
+        }
+
+        public void UnregisterEventHandlers()
+        {
+            if (_frameNavigatedHandler != null)
+                _domains.Page.FrameNavigated -= _frameNavigatedHandler;
+            
+            if (_bindingCalledHandler != null)
+                _domains.Runtime.BindingCalled -= _bindingCalledHandler;
+            
+            Logger.Log("V136 event handlers unregistered");
+        }
+    }
+
+    /// <summary>
+    /// V130 specific event adapter
+    /// </summary>
+    // public class V130EventAdapter : IDevToolsEventAdapter
+    // {
+    //     private readonly OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains _domains;
+    //     private EventHandler<OpenQA.Selenium.DevTools.V130.Page.FrameNavigatedEventArgs>? _frameNavigatedHandler;
+    //     private EventHandler<OpenQA.Selenium.DevTools.V130.Runtime.BindingCalledEventArgs>? _bindingCalledHandler;
+
+    //     public V130EventAdapter(OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains domains)
+    //     {
+    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+    //     }
+
+    //     public void RegisterEventHandlers(EventHandlers handler)
+    //     {
+    //         _frameNavigatedHandler = (sender, e) => 
+    //             handler.HandleFrameNavigated(
+    //                 e.Frame.Id, 
+    //                 e.Frame.ParentId, 
+    //                 e.Frame.Url, 
+    //                 e.Frame.UrlFragment);
+            
+    //         _bindingCalledHandler = (sender, e) => 
+    //             handler.HandleBindingCalled(e.Name, e.Payload);
+            
+    //         _domains.Page.FrameNavigated += _frameNavigatedHandler;
+    //         _domains.Runtime.BindingCalled += _bindingCalledHandler;
+            
+    //         Logger.Log("SUCCESS: Registered V130 event handlers");
+    //     }
+
+    //     public void UnregisterEventHandlers()
+    //     {
+    //         if (_frameNavigatedHandler != null)
+    //             _domains.Page.FrameNavigated -= _frameNavigatedHandler;
+            
+    //         if (_bindingCalledHandler != null)
+    //             _domains.Runtime.BindingCalled -= _bindingCalledHandler;
+            
+    //         Logger.Log("V130 event handlers unregistered");
+    //     }
+    // }
+
+    // /// <summary>
+    // /// V127 specific event adapter
+    // /// </summary>
+    // public class V127EventAdapter : IDevToolsEventAdapter
+    // {
+    //     private readonly OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains _domains;
+    //     private EventHandler<OpenQA.Selenium.DevTools.V127.Page.FrameNavigatedEventArgs>? _frameNavigatedHandler;
+    //     private EventHandler<OpenQA.Selenium.DevTools.V127.Runtime.BindingCalledEventArgs>? _bindingCalledHandler;
+
+    //     public V127EventAdapter(OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains domains)
+    //     {
+    //         _domains = domains ?? throw new ArgumentNullException(nameof(domains));
+    //     }
+
+    //     public void RegisterEventHandlers(EventHandlers handler)
+    //     {
+    //         _frameNavigatedHandler = (sender, e) => 
+    //             handler.HandleFrameNavigated(
+    //                 e.Frame.Id, 
+    //                 e.Frame.ParentId, 
+    //                 e.Frame.Url, 
+    //                 e.Frame.UrlFragment);
+            
+    //         _bindingCalledHandler = (sender, e) => 
+    //             handler.HandleBindingCalled(e.Name, e.Payload);
+            
+    //         _domains.Page.FrameNavigated += _frameNavigatedHandler;
+    //         _domains.Runtime.BindingCalled += _bindingCalledHandler;
+            
+    //         Logger.Log("SUCCESS: Registered V127 event handlers");
+    //     }
+
+    //     public void UnregisterEventHandlers()
+    //     {
+    //         if (_frameNavigatedHandler != null)
+    //             _domains.Page.FrameNavigated -= _frameNavigatedHandler;
+            
+    //         if (_bindingCalledHandler != null)
+    //             _domains.Runtime.BindingCalled -= _bindingCalledHandler;
+            
+    //         Logger.Log("V127 event handlers unregistered");
+    //     }
+    // }
+}

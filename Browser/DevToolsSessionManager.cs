@@ -81,13 +81,13 @@ namespace SpecFlowTestGenerator.Browser
             if (await TryInitializeV136())
                 return true;
                 
-            // Try V130 next
-            if (await TryInitializeV130())
-                return true;
+            // // Try V130 next
+            // if (await TryInitializeV130())
+            //     return true;
                 
-            // Try V127 as fallback
-            if (await TryInitializeV127())
-                return true;
+            // // Try V127 as fallback
+            // if (await TryInitializeV127())
+            //     return true;
                 
             // No supported version found
             Logger.Log("FAIL: No supported DevTools version found.");
@@ -130,77 +130,77 @@ namespace SpecFlowTestGenerator.Browser
             }
         }
 
-        /// <summary>
-        /// Tries to initialize with Chrome DevTools Protocol version 130
-        /// </summary>
-        private async Task<bool> TryInitializeV130()
-        {
-            try
-            {
-                Logger.Log("Attempting to get V130 specific domains...");
-                var domains = _session.GetVersionSpecificDomains<OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains>();
-                if (domains == null)
-                    return false;
+        // /// <summary>
+        // /// Tries to initialize with Chrome DevTools Protocol version 130
+        // /// </summary>
+        // private async Task<bool> TryInitializeV130()
+        // {
+        //     try
+        //     {
+        //         Logger.Log("Attempting to get V130 specific domains...");
+        //         var domains = _session.GetVersionSpecificDomains<OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains>();
+        //         if (domains == null)
+        //             return false;
 
-                Logger.Log("SUCCESS: Got V130 specific domains object!");
-                Logger.Log("Attempting to enable Page and Runtime domains...");
-                await domains.Page.Enable(new OpenQA.Selenium.DevTools.V130.Page.EnableCommandSettings());
-                await domains.Runtime.Enable(new OpenQA.Selenium.DevTools.V130.Runtime.EnableCommandSettings());
-                Logger.Log("SUCCESS: Enabled Page and Runtime domains.");
+        //         Logger.Log("SUCCESS: Got V130 specific domains object!");
+        //         Logger.Log("Attempting to enable Page and Runtime domains...");
+        //         await domains.Page.Enable(new OpenQA.Selenium.DevTools.V130.Page.EnableCommandSettings());
+        //         await domains.Runtime.Enable(new OpenQA.Selenium.DevTools.V130.Runtime.EnableCommandSettings());
+        //         Logger.Log("SUCCESS: Enabled Page and Runtime domains.");
 
-                Logger.Log($"Attempting to add binding '{JsBindingName}'...");
-                await domains.Runtime.AddBinding(new OpenQA.Selenium.DevTools.V130.Runtime.AddBindingCommandSettings { Name = JsBindingName });
-                Logger.Log("SUCCESS: Added runtime binding.");
+        //         Logger.Log($"Attempting to add binding '{JsBindingName}'...");
+        //         await domains.Runtime.AddBinding(new OpenQA.Selenium.DevTools.V130.Runtime.AddBindingCommandSettings { Name = JsBindingName });
+        //         Logger.Log("SUCCESS: Added runtime binding.");
 
-                // Set up adapters
-                _eventHandlers.SetAdapter(new V130EventAdapter(domains));
-                _jsInjector.SetAdapter(new V130JavaScriptInjectionAdapter(domains));
+        //         // Set up adapters
+        //         _eventHandlers.SetAdapter(new V130EventAdapter(domains));
+        //         _jsInjector.SetAdapter(new V130JavaScriptInjectionAdapter(domains));
 
-                _domains = domains;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"INFO: V130 not supported: {ex.Message}");
-                return false;
-            }
-        }
+        //         _domains = domains;
+        //         return true;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Logger.Log($"INFO: V130 not supported: {ex.Message}");
+        //         return false;
+        //     }
+        // }
 
-        /// <summary>
-        /// Tries to initialize with Chrome DevTools Protocol version 127
-        /// </summary>
-        private async Task<bool> TryInitializeV127()
-        {
-            try
-            {
-                Logger.Log("Attempting to get V127 specific domains...");
-                var domains = _session.GetVersionSpecificDomains<OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains>();
-                if (domains == null)
-                    return false;
+        // /// <summary>
+        // /// Tries to initialize with Chrome DevTools Protocol version 127
+        // /// </summary>
+        // private async Task<bool> TryInitializeV127()
+        // {
+        //     try
+        //     {
+        //         Logger.Log("Attempting to get V127 specific domains...");
+        //         var domains = _session.GetVersionSpecificDomains<OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains>();
+        //         if (domains == null)
+        //             return false;
 
-                Logger.Log("SUCCESS: Got V127 specific domains object!");
-                Logger.Log("Attempting to enable Page and Runtime domains...");
-                await domains.Page.Enable(new OpenQA.Selenium.DevTools.V127.Page.EnableCommandSettings());
-                await domains.Runtime.Enable(new OpenQA.Selenium.DevTools.V127.Runtime.EnableCommandSettings());
-                Logger.Log("SUCCESS: Enabled Page and Runtime domains.");
+        //         Logger.Log("SUCCESS: Got V127 specific domains object!");
+        //         Logger.Log("Attempting to enable Page and Runtime domains...");
+        //         await domains.Page.Enable(new OpenQA.Selenium.DevTools.V127.Page.EnableCommandSettings());
+        //         await domains.Runtime.Enable(new OpenQA.Selenium.DevTools.V127.Runtime.EnableCommandSettings());
+        //         Logger.Log("SUCCESS: Enabled Page and Runtime domains.");
 
-                Logger.Log($"Attempting to add binding '{JsBindingName}'...");
-                await domains.Runtime.AddBinding(new OpenQA.Selenium.DevTools.V127.Runtime.AddBindingCommandSettings { Name = JsBindingName });
-                Logger.Log("SUCCESS: Added runtime binding.");
+        //         Logger.Log($"Attempting to add binding '{JsBindingName}'...");
+        //         await domains.Runtime.AddBinding(new OpenQA.Selenium.DevTools.V127.Runtime.AddBindingCommandSettings { Name = JsBindingName });
+        //         Logger.Log("SUCCESS: Added runtime binding.");
 
-                // Set up adapters
-                _eventHandlers.SetAdapter(new V127EventAdapter(domains));
-                _jsInjector.SetAdapter(new V127JavaScriptInjectionAdapter(domains));
+        //         // Set up adapters
+        //         _eventHandlers.SetAdapter(new V127EventAdapter(domains));
+        //         _jsInjector.SetAdapter(new V127JavaScriptInjectionAdapter(domains));
 
-                _domains = domains;
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Logger.Log($"INFO: V127 not supported: {ex.Message}");
-                return false;
-            }
-        }
+        //         _domains = domains;
+        //         return true;
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Logger.Log($"INFO: V127 not supported: {ex.Message}");
+        //         return false;
+        //     }
+        // }
 
         /// <summary>
         /// Cleans up the DevTools session
@@ -223,14 +223,14 @@ namespace SpecFlowTestGenerator.Browser
                 {
                     await v136.Runtime.RemoveBinding(new OpenQA.Selenium.DevTools.V136.Runtime.RemoveBindingCommandSettings { Name = JsBindingName }, cts.Token);
                 }
-                else if (_domains is OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains v130)
-                {
-                    await v130.Runtime.RemoveBinding(new OpenQA.Selenium.DevTools.V130.Runtime.RemoveBindingCommandSettings { Name = JsBindingName }, cts.Token);
-                }
-                else if (_domains is OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains v127)
-                {
-                    await v127.Runtime.RemoveBinding(new OpenQA.Selenium.DevTools.V127.Runtime.RemoveBindingCommandSettings { Name = JsBindingName }, cts.Token);
-                }
+                // else if (_domains is OpenQA.Selenium.DevTools.V130.DevToolsSessionDomains v130)
+                // {
+                //     await v130.Runtime.RemoveBinding(new OpenQA.Selenium.DevTools.V130.Runtime.RemoveBindingCommandSettings { Name = JsBindingName }, cts.Token);
+                // }
+                // else if (_domains is OpenQA.Selenium.DevTools.V127.DevToolsSessionDomains v127)
+                // {
+                //     await v127.Runtime.RemoveBinding(new OpenQA.Selenium.DevTools.V127.Runtime.RemoveBindingCommandSettings { Name = JsBindingName }, cts.Token);
+                // }
                 
                 Logger.Log("SUCCESS: Binding removed.");
             }
