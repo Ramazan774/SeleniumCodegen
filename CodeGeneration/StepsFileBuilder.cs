@@ -98,7 +98,7 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 s.AppendLine("        ");
                 s.AppendLine("        // Wait for page to load completely");
                 s.AppendLine("        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(20));");
-                s.AppendLine("        wait.Until(d => ((IJavaScriptExecutor)d).ExecuteScript(\"return document.readyState\").Equals(\"complete\"));");
+                s.AppendLine("        _driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(10);");
                 s.AppendLine("        ");
                 s.AppendLine("        // Additional wait to ensure UI is ready");
                 s.AppendLine("        Thread.Sleep(1000);");
@@ -405,7 +405,7 @@ namespace SpecFlowTestGenerator.CodeGeneration
             s.AppendLine("                ");
             s.AppendLine("                // Try by generic attribute");
             s.AppendLine("                var elementByAttr = js.ExecuteScript(");
-            s.AppendLine("                    \"return document.querySelector('[\" + arguments[0] + \"=\\\"\" + arguments[1] + \"\\\"]')\", ");
+            s.AppendLine("                    \"return document.querySelector('[' + arguments[0] + '=\"' + arguments[1] + '\"]')\", ");
             s.AppendLine("                    selectorType, selectorValue) as IWebElement;");
             s.AppendLine("                ");
             s.AppendLine("                if (elementByAttr != null && elementByAttr.Displayed)");
