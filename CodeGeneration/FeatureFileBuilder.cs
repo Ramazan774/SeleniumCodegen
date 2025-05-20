@@ -52,7 +52,6 @@ namespace SpecFlowTestGenerator.CodeGeneration
                         break;
                         
                     case "Click":
-                        // Use the exact pattern "I click the element with X "Y""
                         featureFile.AppendLine($"\tWhen I click the element with {action.SelectorType} \"{action.SelectorValue}\"");
                         lastActionWasSendKeys = false;
                         break;
@@ -60,10 +59,9 @@ namespace SpecFlowTestGenerator.CodeGeneration
                     case "SendKeys":
                         lastValue = action.Value;
                         lastActionWasSendKeys = true;
-                        break; // Defer step generation
+                        break;
                         
                     case "SendKeysEnter":
-                        // Use the exact pattern "I type "X" and press Enter in element with Y "Z""
                         string valueToUse = lastValue ?? action.Value ?? "";
                         if (!string.IsNullOrEmpty(valueToUse))
                         {
@@ -73,7 +71,7 @@ namespace SpecFlowTestGenerator.CodeGeneration
                         {
                             featureFile.AppendLine($"\tAnd I press Enter in element with {action.SelectorType} \"{action.SelectorValue}\"");
                         }
-                        lastValue = null; // Reset pending value
+                        lastValue = null; 
                         lastActionWasSendKeys = false;
                         break;
                         

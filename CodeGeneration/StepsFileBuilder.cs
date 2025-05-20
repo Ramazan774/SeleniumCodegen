@@ -72,11 +72,12 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 AddSelectSteps(stepsFile, generatedSignatures);
             }
             
-            // Always add Then step
+            // Always add Then step and diagnostic steps
             AddThenSteps(stepsFile, generatedSignatures);
             
             // Add helper methods
             AddGetByHelper(stepsFile);
+            AddFindElementsHelper(stepsFile);
             AddWaitForElementHelper(stepsFile);
             
             // Close class
@@ -138,6 +139,43 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 s.AppendLine("    }");
                 s.AppendLine();
             }
+
+            // Add index-based click step
+            if (sig.Add("ClickNthElementWith"))
+            {
+                s.AppendLine("    [When(@\"I click the (\\d+)[st|nd|rd|th]* element with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    public void ClickNthElementWith(int index, string selectorType, string selectorValue)");
+                s.AppendLine("    {");
+                s.AppendLine("        Console.WriteLine($\"Clicking element #{index} with {selectorType}='{selectorValue}'\");");
+                s.AppendLine("        var elements = FindElements(selectorType, selectorValue);");
+                s.AppendLine("        ");
+                s.AppendLine("        if (elements.Count <= index)");
+                s.AppendLine("        {");
+                s.AppendLine("            throw new NoSuchElementException($\"Found {elements.Count} elements with {selectorType}='{selectorValue}' but index {index} is out of range\");");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        var element = elements.ElementAt(index);");
+                s.AppendLine("        ");
+                s.AppendLine("        try");
+                s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view for better reliability");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
+                s.AppendLine("            element.Click();");
+                s.AppendLine("        }");
+                s.AppendLine("        catch (ElementClickInterceptedException)");
+                s.AppendLine("        {");
+                s.AppendLine("            // Fallback to JavaScript click if regular click fails");
+                s.AppendLine("            Console.WriteLine(\"Regular click failed, trying JavaScript click...\");");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].click();\", element);");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        // Wait for UI to update after click");
+                s.AppendLine("        Thread.Sleep(500);");
+                s.AppendLine("    }");
+                s.AppendLine();
+            }
         }
 
         private void AddSendKeysSteps(StringBuilder s, HashSet<string> sig)
@@ -177,6 +215,49 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 s.AppendLine("    }");
                 s.AppendLine();
             }
+
+            // Add index-based typing step
+            if (sig.Add("TypeIntoNthElement"))
+            {
+                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" into the (\\d+)[st|nd|rd|th]* element with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    [Given(@\"I type \"\"(.*)\"\" into the (\\d+)[st|nd|rd|th]* element with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    public void TypeIntoNthElement(string text, int index, string selectorType, string selectorValue)");
+                s.AppendLine("    {");
+                s.AppendLine("        Console.WriteLine($\"Typing '{text}' into element #{index} with {selectorType}='{selectorValue}'\");");
+                s.AppendLine("        var elements = FindElements(selectorType, selectorValue);");
+                s.AppendLine("        ");
+                s.AppendLine("        if (elements.Count <= index)");
+                s.AppendLine("        {");
+                s.AppendLine("            throw new NoSuchElementException($\"Found {elements.Count} elements with {selectorType}='{selectorValue}' but index {index} is out of range\");");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        var element = elements.ElementAt(index);");
+                s.AppendLine("        ");
+                s.AppendLine("        try");
+                s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
+                s.AppendLine("            element.Clear();");
+                s.AppendLine("            element.SendKeys(text);");
+                s.AppendLine("        }");
+                s.AppendLine("        catch (Exception ex)");
+                s.AppendLine("        {");
+                s.AppendLine("            Console.WriteLine($\"Standard typing failed: {ex.Message}\");");
+                s.AppendLine("            Console.WriteLine(\"Trying JavaScript approach...\");");
+                s.AppendLine("            ");
+                s.AppendLine("            // Fallback to JavaScript for setting value");
+                s.AppendLine("            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].value = arguments[1];\", element, text);");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new Event('change'));\", element);");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        // Wait for UI to update after typing");
+                s.AppendLine("        Thread.Sleep(300);");
+                s.AppendLine("    }");
+                s.AppendLine();
+            }
         }
 
         private void AddEnterSteps(StringBuilder s, HashSet<string> sig)
@@ -190,6 +271,52 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 s.AppendLine("    {");
                 s.AppendLine("        Console.WriteLine($\"Typing '{text}' and pressing Enter in element with {selectorType}='{selectorValue}'\");");
                 s.AppendLine("        var element = WaitForElement(selectorType, selectorValue);");
+                s.AppendLine("        ");
+                s.AppendLine("        try");
+                s.AppendLine("        {");
+                s.AppendLine("            // Scroll element into view");
+                s.AppendLine("            ((IJavaScriptExecutor)_driver).ExecuteScript(\"arguments[0].scrollIntoView({block: 'center'});\", element);");
+                s.AppendLine("            Thread.Sleep(300);");
+                s.AppendLine("            ");
+                s.AppendLine("            element.Clear();");
+                s.AppendLine("            element.SendKeys(text);");
+                s.AppendLine("            Thread.Sleep(300); // Short pause before pressing Enter");
+                s.AppendLine("            element.SendKeys(Keys.Enter);");
+                s.AppendLine("        }");
+                s.AppendLine("        catch (Exception ex)");
+                s.AppendLine("        {");
+                s.AppendLine("            Console.WriteLine($\"Standard typing failed: {ex.Message}\");");
+                s.AppendLine("            Console.WriteLine(\"Trying JavaScript approach...\");");
+                s.AppendLine("            ");
+                s.AppendLine("            // Fallback to JavaScript for setting value and pressing Enter");
+                s.AppendLine("            IJavaScriptExecutor js = (IJavaScriptExecutor)_driver;");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].value = arguments[1];\", element, text);");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new Event('change'));\", element);");
+                s.AppendLine("            js.ExecuteScript(\"arguments[0].dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter', code: 'Enter', keyCode: 13}));\", element);");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        // Wait for UI to update after pressing Enter");
+                s.AppendLine("        Thread.Sleep(1000);");
+                s.AppendLine("    }");
+                s.AppendLine();
+            }
+
+            // Add index-based TypeAndEnter step
+            if (sig.Add("TypeAndEnterNthElement"))
+            {
+                s.AppendLine("    [When(@\"I type \"\"(.*)\"\" and press Enter in the (\\d+)[st|nd|rd|th]* element with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    [Given(@\"I type \"\"(.*)\"\" and press Enter in the (\\d+)[st|nd|rd|th]* element with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    public void TypeAndEnterNthElement(string text, int index, string selectorType, string selectorValue)");
+                s.AppendLine("    {");
+                s.AppendLine("        Console.WriteLine($\"Typing '{text}' and pressing Enter in element #{index} with {selectorType}='{selectorValue}'\");");
+                s.AppendLine("        var elements = FindElements(selectorType, selectorValue);");
+                s.AppendLine("        ");
+                s.AppendLine("        if (elements.Count <= index)");
+                s.AppendLine("        {");
+                s.AppendLine("            throw new NoSuchElementException($\"Found {elements.Count} elements with {selectorType}='{selectorValue}' but index {index} is out of range\");");
+                s.AppendLine("        }");
+                s.AppendLine("        ");
+                s.AppendLine("        var element = elements.ElementAt(index);");
                 s.AppendLine("        ");
                 s.AppendLine("        try");
                 s.AppendLine("        {");
@@ -302,6 +429,68 @@ namespace SpecFlowTestGenerator.CodeGeneration
                 s.AppendLine("    }");
                 s.AppendLine();
             }
+
+            // Add a diagnostic step for troubleshooting
+            if (sig.Add("ThenIWaitAndPrintElementInfo"))
+            {
+                s.AppendLine("    [Then(@\"I wait and print element info for (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    public void ThenIWaitAndPrintElementInfo(string selectorType, string selectorValue)");
+                s.AppendLine("    {");
+                s.AppendLine("        Console.WriteLine($\"Diagnostic info for {selectorType}='{selectorValue}'\");");
+                s.AppendLine("        ");
+                s.AppendLine("        try");
+                s.AppendLine("        {");
+                s.AppendLine("            var elements = FindElements(selectorType, selectorValue);");
+                s.AppendLine("            Console.WriteLine($\"Found {elements.Count} matching elements\");");
+                s.AppendLine("            ");
+                s.AppendLine("            int index = 0;");
+                s.AppendLine("            foreach (var element in elements)");
+                s.AppendLine("            {");
+                s.AppendLine("                Console.WriteLine($\"Element #{index}: Tag={element.TagName}, Displayed={element.Displayed}, Enabled={element.Enabled}\");");
+                s.AppendLine("                index++;");
+                s.AppendLine("            }");
+                s.AppendLine("            ");
+                s.AppendLine("            // If no elements found, try to report what's on the page");
+                s.AppendLine("            if (elements.Count == 0)");
+                s.AppendLine("            {");
+                s.AppendLine("                Console.WriteLine(\"Looking for similar elements on the page...\");");
+                s.AppendLine("                var allElements = _driver.FindElements(By.XPath(\"//*\"));");
+                s.AppendLine("                var relevantElements = new List<IWebElement>();");
+                s.AppendLine("                ");
+                s.AppendLine("                foreach (var el in allElements)");
+                s.AppendLine("                {");
+                s.AppendLine("                    try {");
+                s.AppendLine("                        string tagName = el.TagName?.ToLower() ?? \"\";");
+                s.AppendLine("                        if (tagName == \"input\" || tagName == \"button\" || tagName == \"a\" || tagName == \"select\")");
+                s.AppendLine("                        {");
+                s.AppendLine("                            relevantElements.Add(el);");
+                s.AppendLine("                        }");
+                s.AppendLine("                    } catch { /* Ignore stale elements */ }");
+                s.AppendLine("                }");
+                s.AppendLine("                ");
+                s.AppendLine("                Console.WriteLine($\"Found {relevantElements.Count} interactive elements on the page\");");
+                s.AppendLine("            }");
+                s.AppendLine("        }");
+                s.AppendLine("        catch (Exception ex)");
+                s.AppendLine("        {");
+                s.AppendLine("            Console.WriteLine($\"Error during diagnostics: {ex.Message}\");");
+                s.AppendLine("        }");
+                s.AppendLine("    }");
+                s.AppendLine();
+            }
+
+            // Add a step to count and print elements
+            if (sig.Add("ThenIShouldSeeElements"))
+            {
+                s.AppendLine("    [Then(@\"I should see (\\d+) elements? with (.*?) \"\"(.*?)\"\"\")]");
+                s.AppendLine("    public void ThenIShouldSeeElements(int expectedCount, string selectorType, string selectorValue)");
+                s.AppendLine("    {");
+                s.AppendLine("        Console.WriteLine($\"Checking for {expectedCount} elements with {selectorType}='{selectorValue}'\");");
+                s.AppendLine("        var elements = FindElements(selectorType, selectorValue);");
+                s.AppendLine("        Assert.That(elements.Count, Is.EqualTo(expectedCount), $\"Expected {expectedCount} elements but found {elements.Count}\");");
+                s.AppendLine("    }");
+                s.AppendLine();
+            }
         }
 
         private void AddGetByHelper(StringBuilder s)
@@ -340,6 +529,34 @@ namespace SpecFlowTestGenerator.CodeGeneration
             s.AppendLine();
         }
 
+        private void AddFindElementsHelper(StringBuilder s)
+        {
+            s.AppendLine("    // Helper method to find all elements matching a selector");
+            s.AppendLine("    private IReadOnlyCollection<IWebElement> FindElements(string selectorType, string selectorValue, int timeoutSeconds = 10)");
+            s.AppendLine("    {");
+            s.AppendLine("        var wait = new WebDriverWait(_driver, TimeSpan.FromSeconds(timeoutSeconds));");
+            s.AppendLine("        var by = GetBy(selectorType, selectorValue);");
+            s.AppendLine("        ");
+            s.AppendLine("        try");
+            s.AppendLine("        {");
+            s.AppendLine("            Console.WriteLine($\"Finding elements with {selectorType}='{selectorValue}'\");");
+            s.AppendLine("            var elements = wait.Until(driver => {");
+            s.AppendLine("                var foundElements = driver.FindElements(by);");
+            s.AppendLine("                return foundElements.Count > 0 ? foundElements : null;");
+            s.AppendLine("            });");
+            s.AppendLine("            ");
+            s.AppendLine("            Console.WriteLine($\"Found {elements.Count} elements with {selectorType}='{selectorValue}'\");");
+            s.AppendLine("            return elements;");
+            s.AppendLine("        }");
+            s.AppendLine("        catch (WebDriverTimeoutException)");
+            s.AppendLine("        {");
+            s.AppendLine("            Console.WriteLine($\"No elements found with {selectorType}='{selectorValue}'\");");
+            s.AppendLine("            return new List<IWebElement>();");
+            s.AppendLine("        }");
+            s.AppendLine("    }");
+            s.AppendLine();
+        }
+
         private void AddWaitForElementHelper(StringBuilder s)
         {
             // Add a simple, generic waitForElement method without any website-specific code
@@ -353,10 +570,19 @@ namespace SpecFlowTestGenerator.CodeGeneration
             s.AppendLine("        {");
             s.AppendLine("            // First attempt with the provided selector");
             s.AppendLine("            Console.WriteLine($\"Looking for element with {selectorType}='{selectorValue}'\");");
-            s.AppendLine("            return wait.Until(driver => {");
-            s.AppendLine("                var element = driver.FindElement(by);");
-            s.AppendLine("                return element.Displayed ? element : null;");
+            s.AppendLine("            var element = wait.Until(driver => {");
+            s.AppendLine("                var foundElement = driver.FindElement(by);");
+            s.AppendLine("                return foundElement.Displayed ? foundElement : null;");
             s.AppendLine("            });");
+            s.AppendLine("            ");
+            s.AppendLine("            // Check for multiple matches and warn if found");
+            s.AppendLine("            var allMatches = _driver.FindElements(by);");
+            s.AppendLine("            if (allMatches.Count > 1)");
+            s.AppendLine("            {");
+            s.AppendLine("                Console.WriteLine($\"WARNING: Found {allMatches.Count} elements with {selectorType}='{selectorValue}'. Using the first match. For a specific element, use 'I click the Nth element with...' step\");");
+            s.AppendLine("            }");
+            s.AppendLine("            ");
+            s.AppendLine("            return element;");
             s.AppendLine("        }");
             s.AppendLine("        catch (WebDriverTimeoutException)");
             s.AppendLine("        {");
@@ -403,9 +629,9 @@ namespace SpecFlowTestGenerator.CodeGeneration
             s.AppendLine("                    }");
             s.AppendLine("                }");
             s.AppendLine("                ");
-            s.AppendLine("                // Try by generic attribute");
+            s.AppendLine("                // Try by generic attribute - FIXED JavaScript format");
             s.AppendLine("                var elementByAttr = js.ExecuteScript(");
-            s.AppendLine("                    \"return document.querySelector('[' + arguments[0] + '=\"' + arguments[1] + '\"]')\", ");
+            s.AppendLine("                    \"return document.querySelector('[' + arguments[0] + '=\\\"' + arguments[1] + '\\\"]')\", ");
             s.AppendLine("                    selectorType, selectorValue) as IWebElement;");
             s.AppendLine("                ");
             s.AppendLine("                if (elementByAttr != null && elementByAttr.Displayed)");
