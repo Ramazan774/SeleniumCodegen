@@ -1,6 +1,7 @@
 #SpecFlow Test Generator
 
 A console-based tool that captures your browser interactions and automatically generates '.feature' and 'steps.cs' files for SpecFlow using Selenium in C#.
+Planned to be a Visual Studio extension in near future.
 Inspired by Playwright Codegen, but made for .NET ecosystem.
 
 ---
